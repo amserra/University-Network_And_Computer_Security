@@ -1,15 +1,36 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+<script type=text/javascript src="{{url_for('static', filename='js/login.js') }}"></script>
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}Register{% endblock %}</h1>
-{% endblock %}
-
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Register">
+  <h1>Sign Up</h1>
+  <form>
+    <div class="field">
+      <input type="email" name="email" class="input" placeholder=" ">
+      <label for="email" class="label">Email</label>
+    </div>
+
+    <div class="field">
+      <input type="password" name="password" class="input" placeholder=" ">
+      <label for="password" class="label">Password</label>
+
+      <span class="toggle-password">👁️</span>
+    </div>
+
+    <div class="strength">
+      <span class="bar bar-1"></span>
+      <span class="bar bar-2"></span>
+      <span class="bar bar-3"></span>
+      <span class="bar bar-4"></span>
+    </div>
+
+    <ul id="validation-links">
+      <li>❌  must be at least 5 characters</li>
+      <li>❌  must contain a capital letter</li>
+      <li>❌  must contain a number</li>
+      <li>❌  must contain one of $&+,:;=?@#</li>
+    </ul>
+
+    <button disabled="true" class="btn-register">Sign Up</button>
   </form>
 {% endblock %}

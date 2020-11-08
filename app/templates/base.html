@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<title>{% block title %}{% endblock %} - app</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+<title>{% block title %}{% endblock %} - SecureAuth</title>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<link rel="stylesheet" href="https://use.typekit.net/oez1alf.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 <nav>
   <h1><a href="{{ url_for('index') }}">app</a></h1>
   <ul>
     {% if g.user %}
     <li><span>{{ g.user['username'] }}</span></li>
-    <li><a href="{{ url_for('auth.logout') }}">Log Out</a> {% else %}</li>
+    <li><a href="{{ url_for('auth.logout') }}">Log Out</a> z{% else %}</li>
 
     <li><a href="{{ url_for('auth.register') }}">Register</a></li>
     <li>
@@ -17,7 +20,11 @@
 </nav>
 <section class="content">
   <header>{% block header %}{% endblock %}</header>
+  
   {% for message in get_flashed_messages() %}
   <div class="flash">{{ message }}</div>
-  {% endfor %} {% block content %}{% endblock %}
+  {% endfor %} 
+  <main>
+  {% block content %}{% endblock %}
+  </main>
 </section>
