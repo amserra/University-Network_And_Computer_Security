@@ -1,14 +1,21 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+<script type=text/javascript src="{{url_for('static', filename='js/login.js') }}"></script>
 {% extends 'base.html' %}
-{% block header %}
-  <h1>{% block title %}Log In{% endblock %}</h1>
-{% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
+  <h1 class="header">Sign In</h1>
+  <form class="login-form" method="POST">
+    <div class="field">
+      <input type="text" name="email" class="input" placeholder=" " required>
+      <label for="email" class="label">Email</label>
+    </div>
+
+    <div class="field">
+      <input type="password" name="password" class="input" placeholder=" " required>
+      <label for="password" class="label">Password</label>
+      <span class="toggle-password">👁️</span>
+    </div>
+
+    <button disabled="true" class="btn-login">Login</button>
   </form>
 {% endblock %}

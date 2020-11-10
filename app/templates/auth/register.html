@@ -1,19 +1,23 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
-<script type=text/javascript src="{{url_for('static', filename='js/login.js') }}"></script>
+<script type=text/javascript src="{{url_for('static', filename='js/register.js') }}"></script>
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>Sign Up</h1>
-  <form>
+  <h1 class="header">Sign Up</h1>
+  <form class="login-form" method="POST">
     <div class="field">
-      <input type="email" name="email" class="input" placeholder=" ">
+      <input type="text" name="name" class="input" placeholder=" " minlength="4" required>
+      <label for="name" class="label">Name</label>
+    </div>
+
+    <div class="field">
+      <input type="email" name="email" class="input" placeholder=" " required>
       <label for="email" class="label">Email</label>
     </div>
 
     <div class="field">
-      <input type="password" name="password" class="input" placeholder=" ">
+      <input type="password" name="password" class="input" placeholder=" " required>
       <label for="password" class="label">Password</label>
-
       <span class="toggle-password">👁️</span>
     </div>
 
@@ -25,12 +29,12 @@
     </div>
 
     <ul id="validation-links">
-      <li>❌  must be at least 5 characters</li>
+      <li>❌  must be at least 8 characters</li>
       <li>❌  must contain a capital letter</li>
       <li>❌  must contain a number</li>
-      <li>❌  must contain one of $&+,:;=?@#</li>
+      <li>❌  must contain one of $&+,:;=?@#!</li>
     </ul>
 
-    <button disabled="true" class="btn-register">Sign Up</button>
+    <button disabled="true" class="btn-register">Register</button>
   </form>
 {% endblock %}

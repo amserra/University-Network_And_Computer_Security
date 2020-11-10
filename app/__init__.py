@@ -1,50 +1,46 @@
 import os
+import sys
+import logging
 
 from flask import Flask
 
 
 def create_app(test_config=None):
-    """Create and configure an instance of the Flask application."""
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    # Create and configure an instance of the Flask application.
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        # a default secret that should be overridden by instance config
-        SECRET_KEY="dev",
-        # store the database in the instance folder
-        DATABASE=os.path.join(app.instance_path, "app.sqlite"),
-    )
+    SECRET_KEY = os.environ["SECRET_KEY"]
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile("config.py", silent=True)
+    if not SECRET_KEY:
+        raise ValueError("No SECRET_KEY set for Flask application")
     else:
-        # load the test config if passed in
-        app.config.update(test_config)
+        SECRET_KEY = SECRET_KEY.encode('utf-8', 'surrogatepass') 
+
+    app.config.from_mapping(
+        SECRET_KEY=SECRET_KEY,
+        # store the database in the instance folder
+        DATABASE=os.path.join(app.instance_path, "db.sqlite"),
+    )
 
     # ensure the instance folder exists
     try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
-    @app.route("/hello")
-    def hello():
-        return "Hello, World!"
+        os.makedirs(app.instance_path, exist_ok=True)
+    except OSError as e:
+        print(str(e))
 
     # register the database commands
-    from app import db
+    from app.model import db
 
     db.init_app(app)
 
     # apply the blueprints to the app
-    from app import auth, blog
+    from app.controllers import auth, view
 
     app.register_blueprint(auth.bp)
-    app.register_blueprint(blog.bp)
+    app.register_blueprint(view.bp)
 
-    # make url_for('index') == url_for('blog.index')
-    # in another app, you might define a separate main index here with
-    # app.route, while giving the blog blueprint a url_prefix, but for
-    # the tutorial the blog will be the main index
+    # make url_for('index') == url_for('view.index')
     app.add_url_rule("/", endpoint="index")
 
     return app

@@ -4,27 +4,33 @@
 <meta name='viewport' content='width=device-width,initial-scale=1'>
 <link rel="stylesheet" href="https://use.typekit.net/oez1alf.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-<nav>
-  <h1><a href="{{ url_for('index') }}">app</a></h1>
-  <ul>
-    {% if g.user %}
-    <li><span>{{ g.user['username'] }}</span></li>
-    <li><a href="{{ url_for('auth.logout') }}">Log Out</a> z{% else %}</li>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
 
-    <li><a href="{{ url_for('auth.register') }}">Register</a></li>
-    <li>
+<nav class="navbar">
+  <ul class="navbar-nav">
+    <li style="float: left" class="navbar-item">
+      <a href="{{ url_for('index') }}">Home</a>
+    </li>
+    {% if g.user %}
+    <li class="navbar-item">
+      <a href="{{ url_for('auth.logout') }}">Log Out</a>
+    </li>
+    <li class="navbar-item">
+      <span>{{ g.user['name'] }}</span>
+      {% else %}
+    </li>
+    <li class="navbar-item">
+      <a href="{{ url_for('auth.register') }}">Register</a>
+    </li>
+    <li class="navbar-item">
       <a href="{{ url_for('auth.login') }}">Log In</a>
       {% endif %}
     </li>
   </ul>
 </nav>
-<section class="content">
-  <header>{% block header %}{% endblock %}</header>
-  
+<section class="content">  
   {% for message in get_flashed_messages() %}
   <div class="flash">{{ message }}</div>
   {% endfor %} 
-  <main>
-  {% block content %}{% endblock %}
-  </main>
+  <main>{% block content %}{% endblock %}</main>
 </section>
