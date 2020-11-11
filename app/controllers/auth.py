@@ -102,7 +102,6 @@ def login():
             logging.debug("Success in POST /login: Logged user with email %s" % email)
             return redirect(url_for("index"))
 
-        # TODO: Improve where this is shown 
         flash(error)
 
     return render_template("auth/login.html")

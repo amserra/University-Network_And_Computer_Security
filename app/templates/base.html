@@ -29,8 +29,5 @@
   </ul>
 </nav>
 <section class="content">  
-  {% for message in get_flashed_messages() %}
-  <div class="flash">{{ message }}</div>
-  {% endfor %} 
   <main>{% block content %}{% endblock %}</main>
 </section>
