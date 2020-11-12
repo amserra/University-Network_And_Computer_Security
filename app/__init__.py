@@ -5,7 +5,7 @@ import logging
 from flask import Flask
 
 
-def create_app(test_config=None):
+def create_app():
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
     # Create and configure an instance of the Flask application.
@@ -19,8 +19,9 @@ def create_app(test_config=None):
 
     app.config.from_mapping(
         SECRET_KEY=SECRET_KEY,
-        # store the database in the instance folder
         DATABASE=os.path.join(app.instance_path, "db.sqlite"),
+        RECAPTCHA_PUBLIC_KEY=os.environ["RECAPTCHA_PUBLIC_KEY"],
+        RECAPTCHA_PRIVATE_KEY=os.environ["RECAPTCHA_PRIVATE_KEY"]
     )
 
     # ensure the instance folder exists

@@ -1,1 +1,1 @@
-gunicorn -w 4 "app:create_app(testing=False)"
+gunicorn "app:create_app()"

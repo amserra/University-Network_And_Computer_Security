@@ -40,4 +40,6 @@ class SignupForm(FlaskForm):
             DataRequired(message="Please repeat your password"),
             EqualTo('password', message="Passwords must match")]
     )
+
+    recaptcha = RecaptchaField()
     
