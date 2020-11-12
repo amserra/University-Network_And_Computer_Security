@@ -1,5 +1,6 @@
 import functools
 import logging
+from time import sleep
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -66,10 +67,11 @@ def register():
             # the name is available, store it in the database and go to the login page
             db_create_user(name, email, generate_password_hash(password))
             logging.debug("Success in POST /register: Created user with email %s" % email)
-            # TODO: Show feedback - register successful
+            flash("Register successful. Please login", "info")
+
             return redirect(url_for("auth.login"))
 
-        flash(error)
+        flash(error, "error")
 
     return render_template("auth/register.html")
 
@@ -86,7 +88,6 @@ def login():
         error = None
         user = (db_get_user_by_email(email))
 
-
         if user is None:
             error = "Incorrect email."
             logging.debug("ERROR in POST /login: Invalid email")
@@ -98,11 +99,13 @@ def login():
             # store the user id in a new session and return to the index
             session.clear()
             session["user_id"] = user["id"]
-            # TODO: Show feedback - login successful
+
             logging.debug("Success in POST /login: Logged user with email %s" % email)
+            flash("Login successful", "info")
+            
             return redirect(url_for("index"))
 
-        flash(error)
+        flash(error, "error")
 
     return render_template("auth/login.html")
 

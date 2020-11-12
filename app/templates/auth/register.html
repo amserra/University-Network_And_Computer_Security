@@ -35,12 +35,16 @@
       <li>❌  must contain one of $&+,:;=?@#!</li>
     </ul>
 
-    {% for message in get_flashed_messages() %}
-    <div class="flash">
-      <img height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
-      {{ message }}</div>
-    {% endfor %} 
-
+    {% with errors = get_flashed_messages(category_filter=["error"]) %}
+    {% if errors %}
+    <div>
+      {%- for msg in errors %}
+        <img height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+        {{ msg }}
+      {% endfor -%}
+    </div>
+    {% endif %}
+    {% endwith %}
 
     <button disabled="true" class="btn-register">Register</button>
   </form>

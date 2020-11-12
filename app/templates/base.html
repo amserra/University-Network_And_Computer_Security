@@ -28,6 +28,24 @@
     </li>
   </ul>
 </nav>
+
 <section class="content">  
+  {% with msgs = get_flashed_messages(category_filter=["info"]) %}
+  {% if msgs %}
+      {%- for message in msgs %}
+      <div id="snackbar">
+        {{message}}
+      </div>
+      {% endfor -%}
+    <script>
+      var x = document.getElementById("snackbar");
+      x.className = "show";
+      setTimeout(function () {
+        x.className = x.className.replace("show", "");
+      }, 3000);
+    </script>
+  {% endif %}
+  {% endwith %}
+
   <main>{% block content %}{% endblock %}</main>
 </section>
