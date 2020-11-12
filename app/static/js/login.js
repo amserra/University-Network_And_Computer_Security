@@ -8,17 +8,17 @@ window.onload = () => {
   email.addEventListener("input", () => checkButtton(button, email, password));
   password.addEventListener("input", () => checkButtton(button, email, password));
 
-  toggle_span.addEventListener("mouseenter", (e) => showPassword(e, password));
-  toggle_span.addEventListener("mouseleave", (e) => hidePassword(e, password));
+  toggle_span.addEventListener("mouseenter", showPassword);
+  toggle_span.addEventListener("mouseleave", hidePassword);
 };
 
-function showPassword(e, password) {
-  password.type = "text";
+function showPassword(e) {
+  e.relatedTarget.type = "text";
   e.target.innerHTML = "🙈";
 }
 
-function hidePassword(e, password) {
-  password.type = "password";
+function hidePassword(e) {
+  e.relatedTarget.type = "password";
   e.target.innerHTML = "👁️";
 }
 

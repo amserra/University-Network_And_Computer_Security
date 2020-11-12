@@ -1,13 +1,13 @@
 import functools
 import logging
-from time import sleep
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 ### TODO: Define generate_password_hash method
 
-from app.model.db import get_db
 from app.model.model import db_get_user_by_id, db_get_user_by_email, db_create_user
+
+from app.classes.forms import SignupForm
 
 logging.basicConfig(level=logging.DEBUG)
 bp = Blueprint("auth", __name__)
@@ -42,38 +42,17 @@ def register():
     if 'user_id' in session:
         return redirect(url_for("index"))
 
-    if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
-        db = get_db()
-        error = None
+    form = SignupForm()
 
-        # TODO: Validate data from the client - never trust the client. Check for malicious input
-        if not name:
-            error = "Name is required."
-            logging.debug("ERROR in POST /register: Invalid name")
-        elif not email:
-            error = "Email is required."
-            logging.debug("ERROR in POST /register: Invalid email")
-        elif not password:
-            error = "Password is required."
-            logging.debug("ERROR in POST /register: Invalid password")
-        elif (db_get_user_by_email(email) is not None):
-            error = "User {0} is already registered.".format(email)
-            logging.debug("ERROR in POST /register: User already registred")
+    # validate_on_submit also checks if it is a POST request
+    if form.validate_on_submit():
+        # Missing validation with database (check against existing emails)
+        db_create_user(form.name.data, form.email.data, generate_password_hash(form.password.data))
+        logging.debug("Success in POST /register: Created user with email %s" % form.email.data)
+        flash("Register successful", "info")
+        return redirect(url_for("auth.login"))
 
-        if error is None:
-            # the name is available, store it in the database and go to the login page
-            db_create_user(name, email, generate_password_hash(password))
-            logging.debug("Success in POST /register: Created user with email %s" % email)
-            flash("Register successful. Please login", "info")
-
-            return redirect(url_for("auth.login"))
-
-        flash(error, "error")
-
-    return render_template("auth/register.html")
+    return render_template("auth/register.html", form=form)
 
 
 # Log in a registered user by adding the user id to the session.
@@ -89,10 +68,10 @@ def login():
         user = (db_get_user_by_email(email))
 
         if user is None:
-            error = "Incorrect email."
+            error = "Incorrect email"
             logging.debug("ERROR in POST /login: Invalid email")
         elif not check_password_hash(user["password"], password):
-            error = "Incorrect password."
+            error = "Incorrect password"
             logging.debug("ERROR in POST /login: Invalid password")
 
         if error is None:

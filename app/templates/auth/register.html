@@ -4,21 +4,53 @@
 
 {% block content %}
   <h1 class="header">Sign Up</h1>
-  <form class="login-form" method="POST">
+  <form class="login-form" method="POST" novalidate>
+    {{ form.csrf_token }}
+
     <div class="field">
-      <input type="text" name="name" class="input" placeholder=" " minlength="4" required>
-      <label for="name" class="label">Name</label>
+      {{ form.name(class_="input", placeholder=" ") }}
+      {{ form.name.label(class_="label") }}
+      {% if form.name.errors %}
+        <div class="error-register">
+          <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+          {{ form.name.errors[0] }}
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="field">
+      {{ form.email(class_="input", placeholder=" ") }}
+      {{ form.email.label(class_="label") }}
+      {% if form.email.errors %}
+        <div class="error-register">
+          <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+          {{ form.email.errors[0] }}
+        </div>
+      {% endif %}
     </div>
 
     <div class="field">
-      <input type="email" name="email" class="input" placeholder=" " required>
-      <label for="email" class="label">Email</label>
-    </div>
-
-    <div class="field">
-      <input type="password" name="password" class="input" placeholder=" " required>
-      <label for="password" class="label">Password</label>
+      {{ form.password(class_="input", placeholder=" ") }}
+      {{ form.password.label(class_="label") }}
       <span class="toggle-password">👁️</span>
+      {% if form.password.errors %}
+        <div class="error-register">
+          <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+          {{ form.password.errors[0] }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="field" style="margin-bottom: 4rem">
+      {{ form.confirmPassword(class_="input", placeholder=" ") }}
+      {{ form.confirmPassword.label(class_="label") }}
+      <span class="toggle-password">👁️</span>
+      {% if form.confirmPassword.errors %}
+        <div class="error-register">
+          <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+          {{ form.confirmPassword.errors[0] }}
+        </div>
+      {% endif %}
     </div>
 
     <div class="strength">
@@ -35,17 +67,6 @@
       <li>❌  must contain one of $&+,:;=?@#!</li>
     </ul>
 
-    {% with errors = get_flashed_messages(category_filter=["error"]) %}
-    {% if errors %}
-    <div>
-      {%- for msg in errors %}
-        <img height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
-        {{ msg }}
-      {% endfor -%}
-    </div>
-    {% endif %}
-    {% endwith %}
-
-    <button disabled="true" class="btn-register">Register</button>
+    <button class="btn-register">Register</button>
   </form>
 {% endblock %}
