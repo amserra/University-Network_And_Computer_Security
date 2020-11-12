@@ -1,1 +1,1 @@
-web: gunicorn app:create_app(testing=False) --timeout 10
+gunicorn -w 4 "app:create_app(testing=False)"
