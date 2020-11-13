@@ -28,7 +28,7 @@ def create_app():
     try:
         os.makedirs(app.instance_path, exist_ok=True)
     except OSError as e:
-        print(str(e))
+        raise "Could not create instance directory"
 
     # register the database commands
     from app.model import db
