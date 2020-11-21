@@ -1,4 +1,3 @@
-# TODO: Handle 404
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for, session
 
 from werkzeug.exceptions import abort
