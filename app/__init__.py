@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import datetime
 
 from flask import Flask, render_template
 
@@ -19,6 +20,7 @@ def create_app():
 
     app.config.from_mapping(
         SECRET_KEY=SECRET_KEY,
+        PERMANENT_SESSION_LIFETIME=datetime.timedelta(minutes=120),
         DATABASE=os.path.join(app.instance_path, "db.sqlite"),
         RECAPTCHA_PUBLIC_KEY=os.environ["RECAPTCHA_PUBLIC_KEY"],
         RECAPTCHA_PRIVATE_KEY=os.environ["RECAPTCHA_PRIVATE_KEY"]
