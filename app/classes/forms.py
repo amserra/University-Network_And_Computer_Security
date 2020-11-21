@@ -11,8 +11,6 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, Valida
 from app.model.model import db_get_user_by_email
 
 def check_unique(form, field):
-    print(field.data)
-    print(db_get_user_by_email(field.data))
     if(db_get_user_by_email(field.data) is not None):
         raise ValidationError('An user with this email already exists')
 

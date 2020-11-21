@@ -3,7 +3,6 @@ import logging
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-### TODO: Define generate_password_hash method
 
 from app.model.model import db_get_user_by_id, db_get_user_by_email, db_create_user
 
@@ -47,7 +46,7 @@ def register():
     # validate_on_submit also checks if it is a POST request
     if form.validate_on_submit():
         # Missing validation with database (check against existing emails)
-        db_create_user(form.name.data, form.email.data, generate_password_hash(form.password.data))
+        db_create_user(form.name.data, form.email.data, generate_password_hash(form.password.data, 'pbkdf2:sha256:150000', 8))
         logging.debug("Success in POST /register: Created user with email %s" % form.email.data)
         flash("Register successful", "info")
         return redirect(url_for("auth.login"))
