@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from flask import Flask
+from flask import Flask, render_template
 
 
 def create_app():
@@ -43,5 +43,9 @@ def create_app():
 
     # make url_for('index') == url_for('view.index')
     app.add_url_rule("/", endpoint="index")
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return render_template('error.html'), 404
 
     return app
