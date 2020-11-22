@@ -53,6 +53,35 @@ def register():
 
     return render_template("auth/register.html", form=form)
 
+@bp.route("/confirmLogin", methods=("GET", "POST"))
+def confirmLogin():
+    if 'user_id' in session:
+        return redirect(url_for("index"))
+    
+    if request.method == "POST":
+        user_id=request.args.get('user_id')
+        user = (db_get_user_by_id(user_id))
+        code_2FA = request.form["code_2FA"]
+        error = None
+
+        if code_2FA != "123456": #just to test
+            error = "Code is not correct"
+            print(user)
+            logging.debug("ERROR in POST /confirmLogin: Wrong 2FA code")
+        
+        if error is None:
+            # store the user id in a new session and return to the index
+            session.clear()
+            session["user_id"] = user["id"]
+
+            logging.debug("Success in POST /confirmLogin: Logged 2FA user with email %s" % user["email"])
+            flash("Login successful", "info")
+
+            return redirect(url_for("index"))
+        
+        flash(error, "error")
+
+    return render_template("auth/confirmLogin.html")
 
 # Log in a registered user by adding the user id to the session.
 @bp.route("/login", methods=("GET", "POST"))
@@ -72,16 +101,14 @@ def login():
         elif not check_password_hash(user["password"], password):
             error = "Incorrect password"
             logging.debug("ERROR in POST /login: Invalid password")
+        elif user["emailVerified"] != 0: # quando estiver a funcionar mudar para != para ==
+            error = "Check your email in order to verify your account"
+            logging.debug("ERROR in POST /login: Emil not verified")
 
         if error is None:
-            # store the user id in a new session and return to the index
-            session.clear()
-            session["user_id"] = user["id"]
-
-            logging.debug("Success in POST /login: Logged user with email %s" % email)
-            flash("Login successful", "info")
             
-            return redirect(url_for("index"))
+            logging.debug("Success in POST /login: Logged(user + password) user with email %s" % email)            
+            return redirect(url_for("auth.confirmLogin", user_id=user["id"]))
 
         flash(error, "error")
 

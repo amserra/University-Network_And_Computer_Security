@@ -14,3 +14,4 @@ build/
 .DS_Store
 .vscode/settings.json
 set_keys.sh
+set_keys.bat

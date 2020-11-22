@@ -1,3 +1,4 @@
+._2FA-form,
 .login-form {
   --text-color: #afafaf;
   max-width: 500px;
@@ -120,6 +121,7 @@
 }
 
 /* Buttons */
+.btn-confirm-code,
 .btn-register,
 .btn-login {
   margin-top: 1rem;
@@ -131,12 +133,14 @@
   background: transparent;
   transition: all 1000ms;
 }
+.btn-confirm-code:disabled,
 .btn-register:disabled,
 .btn-login:disabled {
   border-color: var(--text-color);
   color: var(--text-color);
 }
 
+.btn-confirm-code:enabled:hover,
 .btn-register:enabled:hover,
 .btn-login:enabled:hover {
   cursor: pointer;
