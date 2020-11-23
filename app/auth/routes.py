@@ -62,12 +62,11 @@ def register():
 
 @auth.route("/confirmLogin", methods=("GET", "POST"))
 def confirmLogin():
-    if 'user_id' in session:
+    if 'user_id' in session or 'user_id_no2FA' not in session:
         return redirect(url_for("main.index"))
     
     if request.method == "POST":
-        user_id = request.args.get('user_id')
-        user = User.query.filter(User.id == user_id).first()
+        user = User.query.filter(User.id == session["user_id_no2FA"]).first()
 
         code_2FA = request.form["code_2FA"]
         error = None
@@ -78,7 +77,6 @@ def confirmLogin():
             logging.debug("ERROR in POST /confirmLogin: Wrong 2FA code")
         
         if error is None:
-            # store the user id in a new session and return to the index
             session.clear()
             session['user_id'] = user.id
 
@@ -100,10 +98,12 @@ def login():
     form = SignInForm()
         
     if form.validate_on_submit():
+        user_id = User.query.filter_by(email=form.email.data).first().id
+        session.clear()
+        session["user_id_no2FA"] = user_id
         logging.debug("Success in POST /login: Logged(user + password) user with email %s" % form.email.data)
 
-        user_id = User.query.filter_by(email=form.email.data).first().id
-        return redirect(url_for("auth.confirmLogin", user_id=user_id))
+        return redirect(url_for("auth.confirmLogin"))
 
     return render_template("auth/login.html", form=form)
 
