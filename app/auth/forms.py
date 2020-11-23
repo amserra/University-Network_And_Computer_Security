@@ -7,11 +7,10 @@ from wtforms import (
 )
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, ValidationError, Regexp
-
-from app.model.model import db_get_user_by_email
+from app.models import db, User
 
 def check_unique(form, field):
-    if(db_get_user_by_email(field.data) is not None):
+    if(User.query.filter_by(email=field.data).first() is not None):
         raise ValidationError('An user with this email already exists')
 
 

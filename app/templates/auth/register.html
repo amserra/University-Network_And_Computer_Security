@@ -68,6 +68,12 @@
     </ul>
 
     {{form.recaptcha}}
+    {% if form.recaptcha.errors %}
+      <div style="transform: translateY(0.3rem)" class="error-register">
+        <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+        There was a problem with the RECAPTCHA. Try again.
+      </div>
+    {% endif %}
 
     <button class="btn-register">Register</button>
   </form>
