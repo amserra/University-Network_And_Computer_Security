@@ -102,7 +102,7 @@ def login():
     if form.validate_on_submit():
         logging.debug("Success in POST /login: Logged(user + password) user with email %s" % form.email.data)
 
-        user_id = User.query.filter_by(email=form.email.data)
+        user_id = User.query.filter_by(email=form.email.data).first().id
         return redirect(url_for("auth.confirmLogin", user_id=user_id))
 
     return render_template("auth/login.html", form=form)
