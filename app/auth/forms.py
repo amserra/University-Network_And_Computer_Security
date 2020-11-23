@@ -7,6 +7,7 @@ from wtforms import (
 )
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, ValidationError, Regexp
+from werkzeug.security import check_password_hash
 from app.models import db, User
 
 def check_unique(form, field):
@@ -40,3 +41,24 @@ class SignupForm(FlaskForm):
 
     recaptcha = RecaptchaField()
     
+def check_email_exists(form, field):
+    if(User.query.filter_by(email=field.data).first() is None):
+        raise ValidationError('The email or password is incorrect(email)')
+
+def check_password_matches(form, field):
+    user = User.query.filter_by(email=form.email.data).first()
+
+    if(user is not None):
+        result = check_password_hash(user.password, field.data)
+        if(not result):
+            raise ValidationError('The email or password is incorrect(pwd)')
+    else:
+        raise ValidationError('The email or password is incorrect(pwd)')
+
+class SignInForm(FlaskForm):
+    email = StringField(
+        "Email", [DataRequired(message="Enter an email address"), check_email_exists]
+    )
+    password = PasswordField(
+        "Password",[DataRequired(message="Enter a password"), check_password_matches],
+    )

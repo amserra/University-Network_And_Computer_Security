@@ -4,7 +4,9 @@
 
 {% block content %}
   <h1 class="header">Sign In</h1>
-  <form class="login-form" method="POST">
+  <form class="login-form" method="POST" novalidate>
+    {{ form.csrf_token }}
+    
     <div class="field">
       <input type="text" name="email" class="input" placeholder=" " required>
       <label for="email" class="label">Email</label>
@@ -16,16 +18,17 @@
       <span class="toggle-password">👁️</span>
     </div>
 
-    {% with errors = get_flashed_messages(category_filter=["error"]) %}
-    {% if errors %}
-    <div>
-      {%- for msg in errors %}
-        <img height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
-        {{ msg }}
-      {% endfor -%}
-    </div>
+    {% if form.errors.email %}
+      <div style="transform: translateY(0.2rem)" class="error-register">
+        <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+        {{ form.errors.email[0] }}
+      </div>
+    {% elif form.errors.password %}
+      <div style="transform: translateY(0.2rem)" class="error-register">
+        <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+        {{ form.errors.password[0] }}
+      </div>
     {% endif %}
-    {% endwith %}
 
     <button disabled="true" class="btn-login">Login</button>
   </form>

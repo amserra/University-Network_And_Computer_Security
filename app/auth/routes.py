@@ -7,7 +7,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.models import db, User
-from .forms import SignupForm
+from .forms import SignupForm, SignInForm
 
 auth = Blueprint("auth", __name__)
 
@@ -96,31 +96,16 @@ def confirmLogin():
 def login():
     if 'user_id' in session:
         return redirect(url_for("main.index"))
+
+    form = SignInForm()
         
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-        error = None
-        user = User.query.filter(User.email == email).first()
+    if form.validate_on_submit():
+        logging.debug("Success in POST /login: Logged(user + password) user with email %s" % form.email.data)
 
-        if user is None:
-            error = "Incorrect email"
-            logging.debug("ERROR in POST /login: Invalid email")
-        elif not check_password_hash(user.password, password):
-            error = "Incorrect password"
-            logging.debug("ERROR in POST /login: Invalid password")
-        elif user.email_verified != 0: # quando estiver a funcionar mudar para != para ==
-            error = "Check your email in order to verify your account"
-            logging.debug("ERROR in POST /login: Email not verified")
+        user_id = User.query.filter_by(email=form.email.data)
+        return redirect(url_for("auth.confirmLogin", user_id=user_id))
 
-        if error is None:
-            
-            logging.debug("Success in POST /login: Logged(user + password) user with email %s" % email)            
-            return redirect(url_for("auth.confirmLogin", user_id=user.id))
-
-        flash(error, "error")
-
-    return render_template("auth/login.html")
+    return render_template("auth/login.html", form=form)
 
 
 # Clear the current session, including the stored user id.

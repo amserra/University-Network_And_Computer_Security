@@ -33,5 +33,6 @@ class User(db.Model):
         nullable=False
     )
 
+    # What is printed if you print(user). Is a .toString()
     def __repr__(self):
-        return "<User {}>".format(self.username)
+        return "<User {}>".format(self.email)
