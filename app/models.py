@@ -34,6 +34,7 @@ class User(db.Model):
     secret_totp_key = db.Column(
         db.String(512),
         default=None,
+    )
     email_verified_at = db.Column(
         db.DateTime
     )
