@@ -32,6 +32,10 @@ class User(db.Model):
         default=0,
         nullable=False
     )
+    secret_totp_key = db.Column(
+        db.String(512),
+        default=None,
+    )
 
     # What is printed if you print(user). Is a .toString()
     def __repr__(self):

@@ -5,9 +5,12 @@ logging.basicConfig(level=logging.DEBUG)
 from datetime import datetime as dt
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
+from Crypto.Random import get_random_bytes 
+
 
 from app.models import db, User
 from .forms import SignupForm, SignInForm
+from .crypto import generate_secret_totp_key, generate_qr_code
 
 auth = Blueprint("auth", __name__)
 
@@ -65,6 +68,11 @@ def confirmLogin():
     if 'user_id' in session or 'user_id_no2FA' not in session:
         return redirect(url_for("main.index"))
     
+    user = User.query.filter(User.id == session["user_id_no2FA"]).first()
+
+    if user.secret_totp_key is None:
+        return redirect(url_for("auth.qr_code"))
+
     if request.method == "POST":
         user = User.query.filter(User.id == session["user_id_no2FA"]).first()
 
@@ -106,6 +114,46 @@ def login():
         return redirect(url_for("auth.confirmLogin"))
 
     return render_template("auth/login.html", form=form)
+
+@auth.route("/qrcode")
+def qr_code():
+    if 'user_id' in session or 'user_id_no2FA' not in session:
+        return redirect(url_for("main.index"))
+    
+    user_id = session.get("user_id_no2FA")
+    user = User.query.filter(User.id == user_id).first()
+
+    if user.email_verified != 1:
+        flash("Please confirm your email", "error")
+        logging.debug(f"ERROR in /qrcode: User with email {user.email} not confirmed")
+        return redirect(url_for("main.index"))
+    
+    if user.secret_totp_key is None:
+        return render_template('auth/qr_code.html')
+
+    return redirect(url_for("main.index"))
+
+@auth.route("/generate_qrcode")
+def generate_qrcode():
+    if 'user_id' in session or 'user_id_no2FA' not in session:
+        return redirect(url_for("main.index"))
+
+    user_id = session.get("user_id_no2FA")
+    user = User.query.filter(User.id == user_id).first()
+
+    if user.email_verified != 1:
+        logging.debug(f"ERROR in /generate_qrcode: User with email {user.email} not confirmed")
+        return redirect(url_for("main.index"))
+
+    if user.secret_totp_key is None:
+        key = generate_secret_totp_key()
+        User.query.filter(User.id == user_id).update(dict(secret_totp_key = key))
+        db.session.commit()
+        logging.debug(f"SUCCESS in /generate_qrcode: User with email {user.email} activated 2FA")
+        session.pop('user_id_no2FA')
+        return generate_qr_code(user.secret_totp_key)
+
+    return redirect(url_for("main.index"))
 
 
 # Clear the current session, including the stored user id.
