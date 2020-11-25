@@ -1,10 +1,11 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
-<script type=text/javascript src="{{url_for('static', filename='js/confirmLogin.js') }}"></script>
+<script type=text/javascript src="{{url_for('static', filename='js/confirm_login.js') }}"></script>
 
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1 class="header">Insert the Two-Factor-Authentication code</h1>
+  <h1 class="header">Sign In</h1>
+  <h3>Insert the Two-Factor-Authentication code</h3>
   <form class="_2FA-form" method="POST">
     <div class="field">
       <input type="text" name="code_2FA" class="input" placeholder=" " required>

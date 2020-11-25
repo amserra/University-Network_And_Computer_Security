@@ -58,8 +58,8 @@ def register():
     return render_template("auth/register.html", form=form)
 
 
-@auth.route("/confirmLogin", methods=("GET", "POST"))
-def confirmLogin():
+@auth.route("/confirm_login", methods=("GET", "POST"))
+def confirm_login():
     if 'user_id' in session or 'user_id_no2FA' not in session:
         return redirect(url_for("main.index"))
     
@@ -77,20 +77,20 @@ def confirmLogin():
         if code_2FA != "123456": #just to test
             error = "Code is not correct"
             print(user)
-            logging.debug("ERROR in POST /confirmLogin: Wrong 2FA code")
+            logging.debug("ERROR in POST /confirm_login: Wrong 2FA code")
         
         if error is None:
             session.clear()
             session['user_id'] = user.id
 
-            logging.debug("Success in POST /confirmLogin: Logged 2FA user with email %s" % user.email)
+            logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
             flash("Login successful", "success")
 
             return redirect(url_for("main.index"))
         
         flash(error, "error")
 
-    return render_template("auth/confirmLogin.html")
+    return render_template("auth/confirm_login.html")
 
 # Log in a registered user by adding the user id to the session.
 @auth.route("/login", methods=("GET", "POST"))
@@ -112,7 +112,7 @@ def login():
             serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
             return redirect(url_for("email.unconfirmed", user_email=serialized_email))
 
-        return redirect(url_for("auth.confirmLogin", user_id=user.id))
+        return redirect(url_for("auth.confirm_login", user_id=user.id))
 
     return render_template("auth/login.html", form=form)
 
