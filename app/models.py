@@ -22,19 +22,20 @@ class User(db.Model):
         db.String(200),
         nullable=False
     )
-    created = db.Column(
+    created_at = db.Column(
         db.DateTime,
         nullable=False
     )
     email_verified = db.Column(
         db.Boolean,
-        index=False,
-        default=0,
+        default=False,
         nullable=False
     )
     secret_totp_key = db.Column(
         db.String(512),
         default=None,
+    email_verified_at = db.Column(
+        db.DateTime
     )
 
     # What is printed if you print(user). Is a .toString()

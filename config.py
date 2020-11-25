@@ -19,6 +19,13 @@ class Config(object):
     # Recaptha keys
     RECAPTCHA_PUBLIC_KEY = environ["RECAPTCHA_PUBLIC_KEY"]
     RECAPTCHA_PRIVATE_KEY = environ["RECAPTCHA_PRIVATE_KEY"]
+    # Email
+    MAIL_SERVER = "smtp.gmail.com"
+    MAIL_USERNAME = environ["MAIL_USERNAME"]
+    MAIL_PASSWORD = environ["MAIL_PASSWORD"]
+    MAIL_PORT = 465
+    MAIL_USE_SSL = True
+    MAIL_USE_TLS = False
 
 class ProdConfig(Config):
     pass

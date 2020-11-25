@@ -43,7 +43,7 @@ class SignupForm(FlaskForm):
     
 def check_email_exists(form, field):
     if(User.query.filter_by(email=field.data).first() is None):
-        raise ValidationError('The email or password is incorrect(email)')
+        raise ValidationError('The email or password is incorrect')
 
 def check_password_matches(form, field):
     user = User.query.filter_by(email=form.email.data).first()
@@ -51,9 +51,9 @@ def check_password_matches(form, field):
     if(user is not None):
         result = check_password_hash(user.password, field.data)
         if(not result):
-            raise ValidationError('The email or password is incorrect(pwd)')
+            raise ValidationError('The email or password is incorrect')
     else:
-        raise ValidationError('The email or password is incorrect(pwd)')
+        raise ValidationError('The email or password is incorrect')
 
 class SignInForm(FlaskForm):
     email = StringField(

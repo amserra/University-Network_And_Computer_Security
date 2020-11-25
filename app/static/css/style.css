@@ -84,27 +84,47 @@ main {
 #snackbar {
   visibility: hidden; /* Hidden by default. Visible on click */
   min-width: 250px; /* Set a default minimum width */
-  margin-left: -125px; /* Divide value of min-width by 2 */
   text-align: center; /* Centered text */
-  padding: 16px; /* Padding */
-  position: fixed; /* Sit on top of the screen */
   z-index: 1; /* Add a z-index if needed */
-  left: 50%; /* Center the snackbar */
-  bottom: 30px; /* 30px from the bottom */
+  padding: 16px; /* Padding */
+  /*Positioning*/
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translate(-50%, -50%);
+  margin: 0 auto;
+
   border: 0;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+  transform: translate(-50%, -50%);
   box-shadow: 0 4px 6px -1px hsl(0 0% 0% / 0.07), 0 2px 4px -1px hsl(0 0% 0% / 0.07);
+  /* color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb; */
+}
+
+#snackbar.snackbar-success {
   color: #155724;
   background-color: #d4edda;
   border-color: #c3e6cb;
 }
 
+#snackbar.snackbar-error {
+  color: rgb(255, 255, 255);
+  background-color: rgb(187, 60, 54);
+}
+
+#snackbar.snackbar-info {
+  color: rgb(255, 255, 255);
+  background-color: rgb(238, 170, 70);
+}
+
 #snackbar.show {
   visibility: visible;
-  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 5.5s;
+  animation: fadein 0.5s, fadeout 0.5s 5.5s;
 }
 
 /* Animations to fade the snackbar in and out */

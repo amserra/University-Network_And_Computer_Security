@@ -30,19 +30,53 @@
 </nav>
 
 <section class="content">  
-  {% with msgs = get_flashed_messages(category_filter=["info"]) %}
+  {% with msgs = get_flashed_messages(category_filter=["success"]) %}
   {% if msgs %}
       {%- for message in msgs %}
-      <div id="snackbar">
+      <div id="snackbar" class="snackbar-success">
         {{message}}
       </div>
       {% endfor -%}
     <script>
       var x = document.getElementById("snackbar");
-      x.className = "show";
+      x.className += " show";
       setTimeout(function () {
         x.className = x.className.replace("show", "");
-      }, 3000);
+      }, 6000);
+    </script>
+  {% endif %}
+  {% endwith %}
+
+  {% with msgs = get_flashed_messages(category_filter=["error"]) %}
+  {% if msgs %}
+      {%- for message in msgs %}
+      <div id="snackbar" class="snackbar-error">
+        {{message}}
+      </div>
+      {% endfor -%}
+    <script>
+      var x = document.getElementById("snackbar");
+      x.className += " show";
+      setTimeout(function () {
+        x.className = x.className.replace("show", "");
+      }, 6000);
+    </script>
+  {% endif %}
+  {% endwith %}
+
+  {% with msgs = get_flashed_messages(category_filter=["info"]) %}
+  {% if msgs %}
+      {%- for message in msgs %}
+      <div id="snackbar" class="snackbar-info">
+        {{message}}
+      </div>
+      {% endfor -%}
+    <script>
+      var x = document.getElementById("snackbar");
+      x.className += " show";
+      setTimeout(function () {
+        x.className = x.className.replace("show", "");
+      }, 6000);
     </script>
   {% endif %}
   {% endwith %}

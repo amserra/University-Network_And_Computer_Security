@@ -1,9 +1,10 @@
-import functools
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from datetime import datetime as dt
+
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import current_app as app
 from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
@@ -11,20 +12,10 @@ from Crypto.Random import get_random_bytes
 from app.models import db, User
 from .forms import SignupForm, SignInForm
 from .crypto import generate_secret_totp_key, generate_qr_code
+from itsdangerous.url_safe import URLSafeSerializer
+from ..email.send_email import send_email
 
 auth = Blueprint("auth", __name__)
-
-# View decorator that redirects anonymous users to the login page.
-# Add @login_required to pages that can't be accessed by anonymous users
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for("auth.login"))
-
-        return view(**kwargs)
-
-    return wrapped_view
 
 #If a user id is stored in the session, load the user object from the database into ``g.user``.
 @auth.before_app_request
@@ -52,16 +43,20 @@ def register():
             name=form.name.data, 
             email=form.email.data, 
             password=generate_password_hash(form.password.data, 'pbkdf2:sha256:150000', 8),
-            created=dt.now()
+            created_at=dt.now()
         )
         db.session.add(new_user)
         db.session.commit()
 
         logging.debug("Success in POST /register: Created user with email %s" % form.email.data)
-        flash("Register successful", "info")
+        
+        send_email(form.email.data, form.name.data)
+        flash("A confirmation email has been sent to your email.", "info")
+
         return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html", form=form)
+
 
 @auth.route("/confirmLogin", methods=("GET", "POST"))
 def confirmLogin():
@@ -89,7 +84,7 @@ def confirmLogin():
             session['user_id'] = user.id
 
             logging.debug("Success in POST /confirmLogin: Logged 2FA user with email %s" % user.email)
-            flash("Login successful", "info")
+            flash("Login successful", "success")
 
             return redirect(url_for("main.index"))
         
@@ -111,7 +106,13 @@ def login():
         session["user_id_no2FA"] = user_id
         logging.debug("Success in POST /login: Logged(user + password) user with email %s" % form.email.data)
 
-        return redirect(url_for("auth.confirmLogin"))
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if(not user.email_verified):
+            serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
+            return redirect(url_for("email.unconfirmed", user_email=serialized_email))
+
+        return redirect(url_for("auth.confirmLogin", user_id=user.id))
 
     return render_template("auth/login.html", form=form)
 

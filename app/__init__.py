@@ -1,5 +1,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 
 # Logging setup. Disables unecessary logs
 import logging
@@ -7,6 +9,7 @@ log = logging.getLogger('werkzeug')
 log.disabled = True
 
 db = SQLAlchemy()
+mail = Mail()
 
 def create_app():
     
@@ -19,13 +22,16 @@ def create_app():
 
     # Initialize the database
     db.init_app(app)
+    mail.init_app(app)
 
     # apply the blueprints to the app
     from app.main.routes import main
     from app.auth.routes import auth
+    from app.email.routes import email
     from app.errors.handlers import errors
     app.register_blueprint(main)
     app.register_blueprint(auth)
+    app.register_blueprint(email)
     app.register_blueprint(errors)
 
     with app.app_context():
