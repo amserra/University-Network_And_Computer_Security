@@ -16,3 +16,4 @@ build/
 set_keys.sh
 set_keys.bat
 .env
+app/site.sqlite
