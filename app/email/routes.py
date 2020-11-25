@@ -22,6 +22,7 @@ def unconfirmed():
     try:
         to = URLSafeSerializer(app.config["SECRET_KEY"]).loads(user_email)
     except:
+        logging.debug("Exception loading serialization of email in /unconfirmed")
         return redirect(url_for('main.index'))
     
     flash('Please confirm your account', 'info')
@@ -32,6 +33,8 @@ def resend_confirmation():
     user_email = request.args.get('user_email')
     user = User.query.filter_by(email=user_email).first_or_404()    
     send_email(user_email, user.name)
+
+    logging.debug("New confirmation email (re)sent to %s" % (user_email))
     flash('A new confirmation email has been sent.', 'info')
     return redirect(url_for('email.unconfirmed'))
 
@@ -40,6 +43,7 @@ def confirm_email(token):
     try:
         user_email = confirm_token(token)
     except:
+        logging.debug("Exception confirming token: probabily token expired")
         flash('The confirmation link is invalid or has expired.', 'error')
         return redirect(url_for('main.index'))
         
@@ -51,5 +55,6 @@ def confirm_email(token):
         user.email_verified_at = dt.now()
         db.session.add(user)
         db.session.commit()
+        logging.debug("Email confirmed in account %s" % (user.email))
         flash('You have confirmed your account. Thanks!', 'success')
     return redirect(url_for('auth.login'))
