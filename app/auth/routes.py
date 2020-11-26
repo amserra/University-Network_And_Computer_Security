@@ -111,9 +111,9 @@ def login():
 
         user = User.query.filter_by(email=form.email.data).first()
         
-        # if(not user.email_verified):
-        #     serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
-        #     return redirect(url_for("email.unconfirmed", user_email=serialized_email))
+        if(not user.email_verified):
+            serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
+            return redirect(url_for("email.unconfirmed", user_email=serialized_email))
 
         if user.has_2FA:
             return redirect(url_for("auth.confirm_login"))
