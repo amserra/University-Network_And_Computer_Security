@@ -7,8 +7,8 @@ from flask import current_app as app
 from itsdangerous.url_safe import URLSafeSerializer
 
 from app.models import db, User
-from .token import generate_confirmation_token, confirm_token
-from .send_email import send_email
+from .token import generate_token, confirm_token
+from .send_email import send_confirmation_email
 
 email = Blueprint("email", __name__)
 
@@ -32,7 +32,7 @@ def unconfirmed():
 def resend_confirmation():
     user_email = request.args.get('user_email')
     user = User.query.filter_by(email=user_email).first_or_404()    
-    send_email(user_email, user.name)
+    send_confirmation_email(user_email, user.name)
 
     logging.debug("New confirmation email (re)sent to %s" % (user_email))
     flash('A new confirmation email has been sent.', 'info')
@@ -57,4 +57,19 @@ def confirm_email(token):
         db.session.commit()
         logging.debug("Email confirmed in account %s" % (user.email))
         flash('You have confirmed your account. Thanks!', 'success')
+    return redirect(url_for('auth.login'))
+
+@email.route('/recover_password/<token>')
+def recover_password(token):
+    try:
+        user_email = confirm_token(token)
+    except:
+        logging.debug("Exception confirming token: probabily token expired")
+        flash('The confirmation link is invalid or has expired.', 'error')
+        return redirect(url_for('main.index'))
+        
+    user = User.query.filter_by(email=user_email).first_or_404()
+    # Check for 2FA code. Add option to add master password if lost phone
+    logging.debug("Recover password OK!")
+
     return redirect(url_for('auth.login'))

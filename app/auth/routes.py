@@ -2,18 +2,17 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from datetime import datetime as dt
-
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from flask import current_app as app
 from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
-
 from app.models import db, User
-from .forms import SignupForm, SignInForm
+from .forms import SignupForm, SignInForm, RecoverPasswordForm
 from .crypto import generate_secret_totp_key
 from itsdangerous.url_safe import URLSafeSerializer
-from ..email.send_email import send_email
+from ..email.send_email import send_confirmation_email, send_password_recover_email
+from .decorators import basic_login_required, full_login_required, return_if_logged
 
 auth = Blueprint("auth", __name__)
 
@@ -27,13 +26,10 @@ def load_logged_in_user():
     else:
         g.user = User.query.filter(User.id == user_id).first()
 
-
-#Validates that the username is not already taken. Hashes thepassword for security.
+#Validates that the username is not already taken. Hashes the password for security.
 @auth.route("/register", methods=("GET", "POST"))
+@return_if_logged
 def register():
-    if 'user_id' in session:
-        return redirect(url_for("main.index"))
-
     form = SignupForm()
 
     # validate_on_submit also checks if it is a POST request
@@ -51,7 +47,7 @@ def register():
 
         logging.debug("Success in POST /register: Created user with email %s" % form.email.data)
         
-        send_email(form.email.data, form.name.data)
+        send_confirmation_email(form.email.data, form.name.data)
         flash("A confirmation email has been sent to your email.", "info")
 
         return redirect(url_for("auth.login"))
@@ -60,12 +56,9 @@ def register():
 
 
 @auth.route("/confirm_login", methods=("GET", "POST"))
+@full_login_required
 def confirm_login():
-    if 'user_id' in session or 'user_id_no2FA' not in session:
-        return redirect(url_for("main.index"))
-    
     user = User.query.filter(User.id == session["user_id_no2FA"]).first()
-
 
     if request.method == "POST":
         user = User.query.filter(User.id == session["user_id_no2FA"]).first()
@@ -97,10 +90,8 @@ def confirm_login():
 
 # Log in a registered user by adding the user id to the session.
 @auth.route("/login", methods=("GET", "POST"))
+@return_if_logged
 def login():
-    if 'user_id' in session:
-        return redirect(url_for("main.index"))
-
     form = SignInForm()
         
     if form.validate_on_submit():
@@ -122,10 +113,26 @@ def login():
 
     return render_template("auth/login.html", form=form)
 
+# If you loose your password you'll have to click the link
+# and then introduce your QR code to change the password
+@auth.route("/lost_password", methods=("GET", "POST"))
+@return_if_logged
+def lost_password():
+    form = RecoverPasswordForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        send_password_recover_email(user.email, user.name)
+        flash("A recover link has been sent to your email.", "info")
+
+        return redirect(url_for("main.index"))
+
+    return render_template("auth/recover_password.html", form=form)
 
 
 # Clear the current session, including the stored user id.
 @auth.route("/logout")
+@full_login_required
 def logout():
     session.clear()
     return redirect(url_for("main.index"))

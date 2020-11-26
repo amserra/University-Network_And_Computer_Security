@@ -14,6 +14,9 @@ def check_unique(form, field):
     if(User.query.filter_by(email=field.data).first() is not None):
         raise ValidationError('An user with this email already exists')
 
+def check_existence(form, field):
+    if(User.query.filter_by(email=field.data).first() is None):
+        raise ValidationError('No such email registered')
 
 class SignupForm(FlaskForm):
     name = StringField(
@@ -61,4 +64,9 @@ class SignInForm(FlaskForm):
     )
     password = PasswordField(
         "Password",[DataRequired(message="Enter a password"), check_password_matches],
+    )
+
+class RecoverPasswordForm(FlaskForm):
+    email = StringField(
+        "Email", [DataRequired(message="Enter an email address"), check_existence]
     )

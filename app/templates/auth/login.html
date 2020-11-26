@@ -30,6 +30,10 @@
       </div>
     {% endif %}
 
-    <button disabled="true" class="btn-login">Login</button>
+    <div style="margin-top: 5vh">
+      <a style="color:purple; font-size: small;" href="{{ url_for('auth.lost_password') }}">Forgot your password?</a>
+    </div>
+
+    <button style="margin-top: 1rem" disabled="true" class="btn-login">Login</button>
   </form>
 {% endblock %}

@@ -11,7 +11,7 @@
     <li style="float: left" class="navbar-item">
       <a href="{{ url_for('main.index') }}">Home</a>
     </li>
-    {% if g.user %}
+    {% if session['user_id'] %}
     <li class="navbar-item">
       <a href="{{ url_for('auth.logout') }}">Log Out</a>
     </li>
