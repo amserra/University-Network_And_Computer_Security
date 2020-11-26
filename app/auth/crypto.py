@@ -1,7 +1,7 @@
-from Crypto.Random import get_random_bytes 
+from os import urandom
 
 def generate_secret_totp_key():
     noBytes = 256
-    key = get_random_bytes(noBytes) # generates a random secret with noBytes bytes
+    key = urandom(noBytes).hex() # generates a random secret with noBytes bytes
+    print(key)
     return key
-

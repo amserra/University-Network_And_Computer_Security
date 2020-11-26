@@ -35,7 +35,6 @@ def generate_qrcode():
     user = User.query.filter(User.id == user_id).first()
 
     if not user.has_2FA:
-        print(user.secret_totp_key)
-        return generate_qr_code(user.secret_totp_key)
+        return generate_qr_code(user.email,user.secret_totp_key)
 
     return redirect(url_for("main.index"))
