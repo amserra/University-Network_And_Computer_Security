@@ -28,12 +28,14 @@ def create_app():
     from app.main.routes import main
     from app.auth.routes import auth
     from app.email.routes import email
+    from app.qr_code.routes import qr_code
     from app.errors.handlers import errors
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(email)
+    app.register_blueprint(qr_code)
     app.register_blueprint(errors)
-
+    
     with app.app_context():
         # Creates database tables
         db.create_all(app=app)

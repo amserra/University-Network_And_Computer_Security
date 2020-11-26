@@ -4,8 +4,8 @@
     <h1 class="header">Sign In</h1>
     <h2>Two Factor Authentication</h2>
     <p>Open your phone app and scan the following QR Code:</p>
-    <p><img id="qr_code" src="{{ url_for('auth.generate_qrcode') }}" style="background-color: white;"></p>
+    <p><img id="qr_code" src="{{ url_for('qr_code.generate_qrcode') }}" style="background-color: white;"></p>
     <li style="float: left" class="navbar-item">
-        <a href="{{ url_for('main.index') }}">Ok, I have scanned it</a>
+        <a href="{{ url_for('auth.confirm_login') }}">Ok, I have scanned it</a>
     </li>
 {% endblock %}

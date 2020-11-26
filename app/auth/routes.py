@@ -11,7 +11,7 @@ from Crypto.Random import get_random_bytes
 
 from app.models import db, User
 from .forms import SignupForm, SignInForm
-from .crypto import generate_secret_totp_key, generate_qr_code
+from .crypto import generate_secret_totp_key
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_email
 
@@ -43,6 +43,7 @@ def register():
             name=form.name.data, 
             email=form.email.data, 
             password=generate_password_hash(form.password.data, 'pbkdf2:sha256:150000', 8),
+            secret_totp_key=generate_secret_totp_key(),
             created_at=dt.now()
         )
         db.session.add(new_user)
@@ -65,8 +66,6 @@ def confirm_login():
     
     user = User.query.filter(User.id == session["user_id_no2FA"]).first()
 
-    if user.secret_totp_key is None:
-        return redirect(url_for("auth.qr_code"))
 
     if request.method == "POST":
         user = User.query.filter(User.id == session["user_id_no2FA"]).first()
@@ -80,6 +79,10 @@ def confirm_login():
             logging.debug("ERROR in POST /confirm_login: Wrong 2FA code")
         
         if error is None:
+            if not user.has_2FA:
+                user.has_2FA = True
+                db.session.commit()
+                logging.debug(f"Success in POST /confirm_login: User with email {user.email} used 2FA for the first time")
             session.clear()
             session['user_id'] = user.id
 
@@ -108,53 +111,17 @@ def login():
 
         user = User.query.filter_by(email=form.email.data).first()
         
-        if(not user.email_verified):
-            serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
-            return redirect(url_for("email.unconfirmed", user_email=serialized_email))
+        # if(not user.email_verified):
+        #     serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
+        #     return redirect(url_for("email.unconfirmed", user_email=serialized_email))
 
-        return redirect(url_for("auth.confirm_login", user_id=user.id))
+        if user.has_2FA:
+            return redirect(url_for("auth.confirm_login"))
+        else:
+            return redirect(url_for("qr_code.qrcode"))
 
     return render_template("auth/login.html", form=form)
 
-@auth.route("/qrcode")
-def qr_code():
-    if 'user_id' in session or 'user_id_no2FA' not in session:
-        return redirect(url_for("main.index"))
-    
-    user_id = session.get("user_id_no2FA")
-    user = User.query.filter(User.id == user_id).first()
-
-    if user.email_verified != 1:
-        flash("Please confirm your email", "error")
-        logging.debug(f"ERROR in /qrcode: User with email {user.email} not confirmed")
-        return redirect(url_for("main.index"))
-    
-    if user.secret_totp_key is None:
-        return render_template('auth/qr_code.html')
-
-    return redirect(url_for("main.index"))
-
-@auth.route("/generate_qrcode")
-def generate_qrcode():
-    if 'user_id' in session or 'user_id_no2FA' not in session:
-        return redirect(url_for("main.index"))
-
-    user_id = session.get("user_id_no2FA")
-    user = User.query.filter(User.id == user_id).first()
-
-    if user.email_verified != 1:
-        logging.debug(f"ERROR in /generate_qrcode: User with email {user.email} not confirmed")
-        return redirect(url_for("main.index"))
-
-    if user.secret_totp_key is None:
-        key = generate_secret_totp_key()
-        User.query.filter(User.id == user_id).update(dict(secret_totp_key = key))
-        db.session.commit()
-        logging.debug(f"SUCCESS in /generate_qrcode: User with email {user.email} activated 2FA")
-        session.pop('user_id_no2FA')
-        return generate_qr_code(user.secret_totp_key)
-
-    return redirect(url_for("main.index"))
 
 
 # Clear the current session, including the stored user id.

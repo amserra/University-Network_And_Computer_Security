@@ -33,7 +33,12 @@ class User(db.Model):
     )
     secret_totp_key = db.Column(
         db.String(512),
-        default=None,
+        nullable=False
+    )
+    has_2FA = db.Column(
+        db.Boolean,
+        default=False,
+        nullable=False
     )
     email_verified_at = db.Column(
         db.DateTime
