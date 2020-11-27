@@ -20,11 +20,18 @@ auth = Blueprint("auth", __name__)
 @auth.before_app_request
 def load_logged_in_user():
     user_id = session.get("user_id")
+    user_id_no2FA = session.get("user_id_no2FA")
 
-    if user_id is None:
+    # If both are none, there's no user
+    if (user_id is None) and (user_id_no2FA is None):
         g.user = None
     else:
-        g.user = User.query.filter(User.id == user_id).first()
+        if user_id is not None:
+            g.user = User.query.filter(User.id == user_id).first()
+        else:
+            # user_id_no2FA is not None
+            g.user = User.query.filter(User.id == user_id_no2FA).first()
+
 
 #Validates that the username is not already taken. Hashes the password for security.
 @auth.route("/register", methods=("GET", "POST"))
@@ -56,12 +63,11 @@ def register():
 
 
 @auth.route("/confirm_login", methods=("GET", "POST"))
-@full_login_required
+@basic_login_required
 def confirm_login():
-    user = User.query.filter(User.id == session["user_id_no2FA"]).first()
+    user = g.user
 
     if request.method == "POST":
-        user = User.query.filter(User.id == session["user_id_no2FA"]).first()
 
         code_2FA = request.form["code_2FA"]
         error = None

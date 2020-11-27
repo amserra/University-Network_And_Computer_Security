@@ -17,15 +17,19 @@
     </li>
     <li class="navbar-item">
       <span>{{ g.user['name'] }}</span>
-      {% else %}
     </li>
+    {% elif session['user_id_no2FA'] %}
+    <li class="navbar-item">
+      <span>{{ g.user['name'] }} (not logged in)</span>
+    </li>
+    {% else %}
     <li class="navbar-item">
       <a href="{{ url_for('auth.register') }}">Register</a>
     </li>
     <li class="navbar-item">
       <a href="{{ url_for('auth.login') }}">Log In</a>
-      {% endif %}
     </li>
+    {% endif %}
   </ul>
 </nav>
 
