@@ -9,7 +9,7 @@ from Crypto.Random import get_random_bytes
 
 from app.models import db, User
 from .forms import SignupForm, SignInForm, RecoverPasswordForm
-from .crypto import generate_secret_totp_key
+from .crypto import generate_secret_totp_key, totp
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_confirmation_email, send_password_recover_email
 from .decorators import basic_login_required, full_login_required, return_if_logged
@@ -66,7 +66,7 @@ def confirm_login():
         code_2FA = request.form["code_2FA"]
         error = None
 
-        if code_2FA != "123456": #just to test
+        if code_2FA != totp(user.secret_totp_key):
             error = "Code is not correct"
             print(user)
             logging.debug("ERROR in POST /confirm_login: Wrong 2FA code")
