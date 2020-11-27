@@ -12,7 +12,7 @@ def return_if_logged(f):
 def basic_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
+        if 'user_id_no2FA' not in session:
             return abort(403)
         return f(*args, **kwargs)
     return decorated_function
@@ -20,7 +20,7 @@ def basic_login_required(f):
 def full_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id_no2FA' not in session:
+        if 'user_id' not in session:
             return abort(403)
         return f(*args, **kwargs)
     return decorated_function
