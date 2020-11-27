@@ -9,6 +9,8 @@ from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, ValidationError, Regexp
 from werkzeug.security import check_password_hash
 from app.models import db, User
+from flask import g
+from .crypto import totp
 
 def check_unique(form, field):
     if(User.query.filter_by(email=field.data).first() is not None):
@@ -58,6 +60,13 @@ def check_password_matches(form, field):
     else:
         raise ValidationError('The email or password is incorrect')
 
+def check_code_matches(form, field):
+    user = g.user
+
+    if(field.data != totp(user.secret_totp_key)):
+        raise ValidationError('The code is incorrect')
+    
+
 class SignInForm(FlaskForm):
     email = StringField(
         "Email", [DataRequired(message="Enter an email address"), check_email_exists]
@@ -69,4 +78,9 @@ class SignInForm(FlaskForm):
 class RecoverPasswordForm(FlaskForm):
     email = StringField(
         "Email", [DataRequired(message="Enter an email address"), check_existence]
+    )
+
+class Code2FAForm(FlaskForm):
+    code_2FA = StringField(
+        "code_2FA", [DataRequired(message="Enter a six digit code"), check_code_matches]
     )

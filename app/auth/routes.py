@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
 from app.models import db, User
-from .forms import SignupForm, SignInForm, RecoverPasswordForm
+from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm
 from .crypto import generate_secret_totp_key, totp
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_confirmation_email, send_password_recover_email
@@ -67,32 +67,25 @@ def register():
 def confirm_login():
     user = g.user
 
-    if request.method == "POST":
+    #============= TESTE - APAGAR DEPOIS ============
+    print(totp(user.secret_totp_key))
+    #================================================
+    form = Code2FAForm()
 
-        code_2FA = request.form["code_2FA"]
-        error = None
+    if form.validate_on_submit():
+        if not user.has_2FA:
+            user.has_2FA = True
+            db.session.commit()
+            logging.debug(f"Success in POST /confirm_login: User with email {user.email} used 2FA for the first time")
+        session.clear()
+        session['user_id'] = user.id
 
-        if code_2FA != totp(user.secret_totp_key):
-            error = "Code is not correct"
-            print(user)
-            logging.debug("ERROR in POST /confirm_login: Wrong 2FA code")
+        logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
+        flash("Login successful", "success")
+
+        return redirect(url_for("main.index"))
         
-        if error is None:
-            if not user.has_2FA:
-                user.has_2FA = True
-                db.session.commit()
-                logging.debug(f"Success in POST /confirm_login: User with email {user.email} used 2FA for the first time")
-            session.clear()
-            session['user_id'] = user.id
-
-            logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
-            flash("Login successful", "success")
-
-            return redirect(url_for("main.index"))
-        
-        flash(error, "error")
-
-    return render_template("auth/confirm_login.html")
+    return render_template("auth/confirm_login.html", form=form)
 
 # Log in a registered user by adding the user id to the session.
 @auth.route("/login", methods=("GET", "POST"))
