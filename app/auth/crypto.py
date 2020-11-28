@@ -44,7 +44,7 @@ def totp(key):
     result = str(otp)
 
     while len(result) < no_digits:
-        result += '0' + result
+        result = '0' + result
 
     return result
 
