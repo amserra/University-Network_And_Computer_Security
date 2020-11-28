@@ -28,8 +28,7 @@ class Config(object):
     MAIL_USE_TLS = False
 
 class ProdConfig(Config):
-    SQREEN_APP_NAME = environ["SQREEN_APP_NAME"]
-    SQREEN_TOKEN = environ["SQREEN_TOKEN"]
+    pass
 
 class DevConfig(Config):
     DEBUG = True

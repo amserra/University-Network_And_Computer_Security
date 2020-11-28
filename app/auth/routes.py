@@ -65,7 +65,7 @@ def register():
 @auth.route("/confirm_login", methods=("GET", "POST"))
 @auth.route("/confirm_login/<type>", methods=("GET", "POST"))
 @basic_login_required
-def confirm_login(type):
+def confirm_login(type=None):
     user = g.user
     print(type)
 
