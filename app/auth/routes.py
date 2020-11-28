@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
 from app.models import db, User
-from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm
+from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm
 from .crypto import generate_secret_totp_key, totp
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_confirmation_email, send_password_recover_email
@@ -63,9 +63,11 @@ def register():
 
 
 @auth.route("/confirm_login", methods=("GET", "POST"))
+@auth.route("/confirm_login/<type>", methods=("GET", "POST"))
 @basic_login_required
-def confirm_login():
+def confirm_login(type):
     user = g.user
+    print(type)
 
     #============= TESTE - APAGAR DEPOIS ============
     print(totp(user.secret_totp_key))
@@ -77,13 +79,18 @@ def confirm_login():
             user.has_2FA = True
             db.session.commit()
             logging.debug(f"Success in POST /confirm_login: User with email {user.email} used 2FA for the first time")
-        session.clear()
-        session['user_id'] = user.id
+        
+        if(type):
+            logging.debug("Success in POST /confirm_login/change_password: User %s can now change password" % user.email)
+            flash("Correct code. You can now change your password", "info")
+            return redirect(url_for("auth.change_password"))
+        else:
+            session.clear()
+            session['user_id'] = user.id
+            logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
+            flash("Login successful", "success")
 
-        logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
-        flash("Login successful", "success")
-
-        return redirect(url_for("main.index"))
+            return redirect(url_for("main.index"))
         
     return render_template("auth/confirm_login.html", form=form)
 
@@ -128,6 +135,21 @@ def lost_password():
 
     return render_template("auth/recover_password.html", form=form)
 
+# Page to change password
+@auth.route("/change_password", methods=("GET", "POST"))
+@basic_login_required
+def change_password():
+    form = ChangePasswordForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(id=g.user.id).first()
+        user.password = generate_password_hash(form.new_password.data, 'pbkdf2:sha256:150000', 8)
+        db.session.commit()
+        session.clear()
+        flash("Password changed successfully. You can login now", "success")
+        return redirect(url_for("main.index"))
+
+    return render_template("auth/change_password.html", form=form)
 
 # Clear the current session, including the stored user id.
 @auth.route("/logout")

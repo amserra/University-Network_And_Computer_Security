@@ -69,7 +69,11 @@ def recover_password(token):
         return redirect(url_for('main.index'))
         
     user = User.query.filter_by(email=user_email).first_or_404()
-    # Check for 2FA code. Add option to add master password if lost phone
-    logging.debug("Recover password OK!")
 
-    return redirect(url_for('auth.login'))
+    # Give the user basic login permission
+    session.clear()
+    session["user_id_no2FA"] = user.id
+    
+    logging.debug("Redirecting user %s to from /recover_password to /confirm_login" % (user.email))
+
+    return redirect(url_for('auth.confirm_login', type='change_password'))
