@@ -19,8 +19,6 @@ def create_app():
 
     if app.config["ENV"] == "production":
         app.config.from_object("config.ProdConfig")
-        import sqreen
-        sqreen.start()
     else:
         app.config.from_object("config.DevConfig")
 
