@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 # from flask_talisman import Talisman
 from itsdangerous import URLSafeTimedSerializer
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Logging setup. Disables unecessary logs
 import logging
@@ -16,6 +17,7 @@ mail = Mail()
 def create_app():
     
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     if app.config["ENV"] == "production":
         app.config.from_object("config.ProdConfig")
