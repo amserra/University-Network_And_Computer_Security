@@ -32,3 +32,4 @@ class ProdConfig(Config):
 
 class DevConfig(Config):
     DEBUG = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:////" + basedir + "/app/site.sqlite"
