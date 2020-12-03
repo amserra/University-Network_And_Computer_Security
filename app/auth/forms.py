@@ -95,3 +95,14 @@ class ChangePasswordForm(FlaskForm):
     confirm_new_password = PasswordField("confirm_new_password", [
         DataRequired(message="Please repeat your password"),
         EqualTo('new_password', message="Passwords must match")])
+
+def check_master_password(form, field):
+    user = g.user
+    
+    if not check_password_hash(user.master_password, field.data):
+        raise ValidationError('The master password is incorrect')
+
+class MasterPasswordForm(FlaskForm):
+    master_password = PasswordField("master_password", [
+        DataRequired(message="Please introduce the master password"),
+        check_master_password])

@@ -1,5 +1,6 @@
 import logging
 logging.basicConfig(level=logging.DEBUG)
+from os import urandom
 
 from datetime import datetime as dt
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -8,11 +9,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
 from app.models import db, User
-from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm
+from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm, MasterPasswordForm
 from .crypto import generate_secret_totp_key, totp
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_confirmation_email, send_password_recover_email
-from .decorators import basic_login_required, full_login_required, return_if_logged
+from .decorators import basic_login_required, full_login_required, return_if_logged, return_if_fully_logged
 
 auth = Blueprint("auth", __name__)
 
@@ -65,8 +66,10 @@ def register():
 @auth.route("/confirm_login", methods=("GET", "POST"))
 @auth.route("/confirm_login/<type>", methods=("GET", "POST"))
 @basic_login_required
+@return_if_fully_logged
 def confirm_login(type=None):
     user = g.user
+    print(type)
     # Case when a user hasn't a 2FA code and clicks to recover password
     if type and (not user.has_2FA):
         flash("You don't have a 2FA code, so you can't recover your password", "error")
@@ -140,9 +143,27 @@ def lost_password():
 
     return render_template("auth/recover_password.html", form=form)
 
+
+@auth.route("/master_password", methods=("GET", "POST"))
+@basic_login_required
+@return_if_fully_logged
+def master_password():
+    form = MasterPasswordForm()
+
+    if form.validate_on_submit():
+        flash("Master password valid. You can now scan the new QR Code", "success")
+        user = User.query.filter_by(id=g.user.id).first()
+        user.has_2FA = False
+        db.session.commit()
+        # TODO: Re-generate QR-code
+        return redirect(url_for("qr_code.qrcode"))
+
+    return render_template("auth/master_password.html", form=form)
+
 # Page to change password
 @auth.route("/change_password", methods=("GET", "POST"))
 @basic_login_required
+@return_if_fully_logged
 def change_password():
     form = ChangePasswordForm()
 

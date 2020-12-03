@@ -31,3 +31,15 @@ def send_password_recover_email(to_email, to_name):
         sender=environ['MAIL_USERNAME']
     )
     mail.send(msg)
+
+def send_master_password_email(to_email, to_name, master_password):
+    html = render_template('email/master_password_template.html', name=to_name, master_password=master_password)
+    subject = "Master password"
+
+    msg = Message(
+        subject,
+        recipients=[to_email],
+        html=html,
+        sender=environ['MAIL_USERNAME']
+    )
+    mail.send(msg)

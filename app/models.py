@@ -43,6 +43,9 @@ class User(db.Model):
     email_verified_at = db.Column(
         db.DateTime
     )
+    master_password = db.Column(
+        db.String(512)
+    )
 
     # What is printed if you print(user). Is a .toString()
     def __repr__(self):

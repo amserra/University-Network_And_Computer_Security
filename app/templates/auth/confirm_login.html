@@ -22,4 +22,8 @@
     {% endif %}
     <button disabled="true" class="btn-confirm-code">Confirm code</button>
   </form>
+
+  <div style="margin-top: 5vh">
+    <a style="color:purple; font-size: small;" href="{{ url_for('auth.master_password') }}">Lost your phone?</a>
+  </div>
 {% endblock %}

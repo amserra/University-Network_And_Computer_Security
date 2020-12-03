@@ -9,6 +9,14 @@ def return_if_logged(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def return_if_fully_logged(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' in session:
+            return redirect(url_for("main.index"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 def basic_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
