@@ -21,10 +21,6 @@ def create_app():
         app.config.from_object("config.ProdConfig")
     else:
         app.config.from_object("config.DevConfig")
-    
-    f = open('test.log','w')
-    f.write(f'{app.config.get("SERVER_NAME")}')
-    f.close()
 
     # Initialize the database
     db.init_app(app)
