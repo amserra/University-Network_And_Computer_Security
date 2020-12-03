@@ -69,6 +69,7 @@ def confirm_login(type=None):
     user = g.user
     # Case when a user hasn't a 2FA code and clicks to recover password
     if type and (not user.has_2FA):
+        flash("You don't have a 2FA code, so you can't recover your password", "error")
         return redirect(url_for("main.index"))
 
     print(type)
