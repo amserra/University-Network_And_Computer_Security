@@ -67,6 +67,10 @@ def register():
 @basic_login_required
 def confirm_login(type=None):
     user = g.user
+    # Case when a user hasn't a 2FA code and clicks to recover password
+    if type and (not user.has_2FA):
+        return redirect(url_for("main.index"))
+
     print(type)
 
     #============= TESTE - APAGAR DEPOIS ============
@@ -80,7 +84,7 @@ def confirm_login(type=None):
             db.session.commit()
             logging.debug(f"Success in POST /confirm_login: User with email {user.email} used 2FA for the first time")
         
-        if(type):
+        if type:
             logging.debug("Success in POST /confirm_login/change_password: User %s can now change password" % user.email)
             flash("Correct code. You can now change your password", "info")
             return redirect(url_for("auth.change_password"))
