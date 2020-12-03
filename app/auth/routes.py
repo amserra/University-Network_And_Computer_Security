@@ -153,9 +153,10 @@ def master_password():
     if form.validate_on_submit():
         flash("Master password valid. You can now scan the new QR Code", "success")
         user = User.query.filter_by(id=g.user.id).first()
+        # Generate a new secret key
         user.has_2FA = False
+        user.secret_totp_key = generate_secret_totp_key()
         db.session.commit()
-        # TODO: Re-generate QR-code
         return redirect(url_for("qr_code.qrcode"))
 
     return render_template("auth/master_password.html", form=form)
