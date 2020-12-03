@@ -85,20 +85,7 @@ class Code2FAForm(FlaskForm):
         "code_2FA", [DataRequired(message="Enter a six digit code"), check_code_matches]
     )
 
-def check_password_matches_g(form, field):
-    user = g.user
-
-    if(user is not None):
-        result = check_password_hash(user.password, field.data)
-        if(not result):
-            raise ValidationError('The password isn\'t correct')
-    else:
-        raise ValidationError('The password isn\'t correct')
-
 class ChangePasswordForm(FlaskForm):
-    old_password = PasswordField("old_password", [
-        DataRequired(message="Please insert your old password"),
-        check_password_matches_g])
     new_password = PasswordField("new_password", [
         DataRequired(message="Please enter a new password"),
         Length(min=8, max=40, message="Must be at least 8 characters"),

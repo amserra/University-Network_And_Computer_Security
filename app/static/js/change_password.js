@@ -1,12 +1,8 @@
 window.onload = () => {
   // Access the DOM once
   let toggle_spans = document.getElementsByClassName("toggle-password");
-  const old_password = toggle_spans[0];
-  const new_password = toggle_spans[1];
-  const confirm_new_password = toggle_spans[2];
-
-  old_password.addEventListener("mouseenter", showPassword);
-  old_password.addEventListener("mouseleave", hidePassword);
+  const new_password = toggle_spans[0];
+  const confirm_new_password = toggle_spans[1];
 
   new_password.addEventListener("mouseenter", showPassword);
   new_password.addEventListener("mouseleave", hidePassword);
