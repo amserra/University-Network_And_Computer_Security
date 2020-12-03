@@ -28,7 +28,7 @@ class Config(object):
     MAIL_USE_TLS = False
 
 class ProdConfig(Config):
-    SERVER_NAME = 'secureauth.ml'
+    pass
 
 class DevConfig(Config):
     DEBUG = True
