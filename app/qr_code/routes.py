@@ -17,7 +17,7 @@ qr_code = Blueprint("qr_code", __name__)
 def qrcode(type=None):
     if type == "change_secret" and "change_secret" in session:
         msg = "For security reasons we advise you to scan a new qr code on your app"
-        return render_template('qr_code/qr_code.html', msg=msg, type=type)
+        return render_template('qr_code/qr_code.html', msg=msg, change_secret=True)
 
     if 'user_id' in session or 'user_id_no2FA' not in session:
         return redirect(url_for("main.index"))
@@ -27,7 +27,7 @@ def qrcode(type=None):
 
     if not user.has_2FA:
         msg = "Open your phone app and scan the following QR Code:"
-        return render_template('qr_code/qr_code.html', msg=msg, type=type)
+        return render_template('qr_code/qr_code.html', msg=msg, change_secret=False)
 
     return redirect(url_for("main.index"))
 

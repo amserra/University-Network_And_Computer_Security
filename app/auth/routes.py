@@ -103,7 +103,7 @@ def confirm_login(type=None):
             last_change_key_time = user.last_change_key_time
             time_diference = time - last_change_key_time
             
-            if time_diference.seconds > 40000:
+            if time_diference.days > 365:
                 # print("SECONDS")
                 # print(f"{time} - {last_change_key_time} = {time_diference.seconds}")
                 session["change_secret"] = True
