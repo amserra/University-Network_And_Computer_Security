@@ -48,7 +48,9 @@ def register():
             email=form.email.data, 
             password=generate_password_hash(form.password.data, 'pbkdf2:sha256:150000', 8),
             secret_totp_key=generate_secret_totp_key(),
-            created_at=dt.now()
+            new_secret_totp_key=generate_secret_totp_key(),
+            last_change_key_time=dt.now(),
+            created_at=dt.now(),
         )
         db.session.add(new_user)
         db.session.commit()
@@ -97,6 +99,17 @@ def confirm_login(type=None):
             session['user_id'] = user.id
             logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
             flash("Login successful", "success")
+            time = dt.now()
+            last_change_key_time = user.last_change_key_time
+            time_diference = time - last_change_key_time
+            
+            if time_diference.seconds > 40000:
+                # print("SECONDS")
+                # print(f"{time} - {last_change_key_time} = {time_diference.seconds}")
+                session["change_secret"] = True
+                user.new_secret_totp_key = generate_secret_totp_key()
+                return redirect(url_for("qr_code.qrcode", type="change_secret"))
+
 
             return redirect(url_for("main.index"))
         
@@ -156,6 +169,7 @@ def master_password():
         # Generate a new secret key
         user.has_2FA = False
         user.secret_totp_key = generate_secret_totp_key()
+        user.last_change_key_time = dt.now()
         db.session.commit()
         return redirect(url_for("qr_code.qrcode"))
 
@@ -184,3 +198,14 @@ def change_password():
 def logout():
     session.clear()
     return redirect(url_for("main.index"))
+
+@auth.route("/change_secret")
+def change_secret():
+    user_id = session.get("user_id")
+    user = User.query.filter_by(id=user_id).first()
+    user.secret_totp_key = user.new_secret_totp_key
+    user.new_secret_totp_key = ""
+    user.last_change_key_time = dt.now()
+    db.session.commit()
+    flash("New qr_code successful", "success")
+    return redirect(url_for("main.index"))  

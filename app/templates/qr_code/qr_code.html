@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="header">Sign In</h1>
-    <h2>Two Factor Authentication</h2>
-    <p>Open your phone app and scan the following QR Code:</p>
+    <h1>Two Factor Authentication</h1>
+    <p>{{msg}}</p>
     <p><img id="qr_code" src="{{ url_for('qr_code.generate_qrcode') }}" style="background-color: white;"></p>
+    <!-- { % if {{type}} == 'change_secret' % } -->
+    <li style="float: left" class="navbar-item">
+        <a href="{{ url_for('main.index') }}">Do it later</a>
+    </li>
+    <li style="float: left" class="navbar-item">
+        <a href="{{ url_for('auth.change_secret') }}">Ok, I have scanned it</a>
+    </li>
+    <!-- { % else % } -->
     <li style="float: left" class="navbar-item">
         <a href="{{ url_for('auth.confirm_login') }}">Ok, I have scanned it</a>
     </li>
+    <!-- { % endif % } -->
 {% endblock %}

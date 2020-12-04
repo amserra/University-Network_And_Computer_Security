@@ -35,6 +35,9 @@ class User(db.Model):
         db.String(512),
         nullable=False
     )
+    new_secret_totp_key = db.Column(
+        db.String(512)
+    )
     has_2FA = db.Column(
         db.Boolean,
         default=False,
@@ -45,6 +48,10 @@ class User(db.Model):
     )
     master_password = db.Column(
         db.String(512)
+    )
+    last_change_key_time = db.Column(
+        db.DateTime,
+        nullable=False
     )
 
     # What is printed if you print(user). Is a .toString()
