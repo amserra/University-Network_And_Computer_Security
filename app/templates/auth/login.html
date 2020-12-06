@@ -18,13 +18,20 @@
       <span class="toggle-password">👁️</span>
     </div>
 
+    {% if attempts %}
+      <div style="transform: translateY(-0.4rem)" class="error-register">
+        <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+        {{ attempts }}
+      </div>
+    {% endif %}
+
     {% if form.errors.email %}
-      <div style="transform: translateY(0.2rem)" class="error-register">
+      <div style="transform: translateY(0.6rem)" class="error-register">
         <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
         {{ form.errors.email[0] }}
       </div>
     {% elif form.errors.password %}
-      <div style="transform: translateY(0.2rem)" class="error-register">
+      <div style="transform: translateY(0.6rem)" class="error-register">
         <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
         {{ form.errors.password[0] }}
       </div>

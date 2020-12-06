@@ -53,7 +53,35 @@ class User(db.Model):
         db.DateTime,
         nullable=False
     )
+    brute_force_timestamp_2fa = db.Column(
+        db.DateTime,
+        nullable = True
+    )
+    brute_force_timestamp_master = db.Column(
+        db.DateTime,
+        nullable = True
+    )
 
     # What is printed if you print(user). Is a .toString()
     def __repr__(self):
         return "<User {}>".format(self.email)
+
+class BlockedIPs(db.Model):
+    """Data model for temporary blocked IPs."""
+    __tablename__ = 'blockedIPs'
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+    ip = db.Column(
+        db.String(80),
+        nullable = False
+    )
+    last_timestamp = db.Column(
+        db.DateTime,
+        nullable = True
+    )
+    timeout = db.Column(
+        db.DateTime,
+        nullable = True
+    )

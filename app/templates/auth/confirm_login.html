@@ -13,9 +13,12 @@
       <label for="code_2FA" class="label">Code</label>
     </div>
 
-
+    <div style="transform: translateY(-0.6rem)" class="error-register">
+      <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+      {{ attempts }}
+    </div>
     {% if form.errors.code_2FA %}
-      <div style="transform: translateY(0.2rem)" class="error-register">
+      <div style="transform: translateY(0.6rem)" class="error-register">
         <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
         {{ form.errors.code_2FA[0] }}
       </div>
