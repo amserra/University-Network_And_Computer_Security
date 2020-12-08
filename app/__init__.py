@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
+from flask_simple_geoip import SimpleGeoIP
 from itsdangerous import URLSafeTimedSerializer
 
 # Logging setup. Disables unecessary logs
@@ -10,6 +11,7 @@ log.disabled = True
 
 db = SQLAlchemy()
 mail = Mail()
+simple_geoip = SimpleGeoIP()
 
 def create_app():
     
@@ -23,6 +25,7 @@ def create_app():
     # Initialize the database
     db.init_app(app)
     mail.init_app(app)
+    simple_geoip.init_app(app)
 
     # apply the blueprints to the app
     from app.main.routes import main

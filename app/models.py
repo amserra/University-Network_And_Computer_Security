@@ -4,7 +4,7 @@ from . import db
 class User(db.Model):
     """Data model for user accounts."""
 
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = db.Column(
         db.Integer,
         primary_key=True
@@ -55,16 +55,41 @@ class User(db.Model):
     )
     brute_force_timestamp_2fa = db.Column(
         db.DateTime,
-        nullable = True
+        nullable=True
     )
     brute_force_timestamp_master = db.Column(
         db.DateTime,
-        nullable = True
+        nullable=True
     )
+    usual_machines = db.relationship(
+        'UsualMachine',
+        backref=db.backref('usual_machine', lazy=True))
 
     # What is printed if you print(user). Is a .toString()
     def __repr__(self):
         return "<User {}>".format(self.email)
+
+class UsualMachine(db.Model):
+    __tablename__ = 'usual_machine'
+
+    id = db.Column(
+        db.Integer, 
+        primary_key=True
+    )
+    user_agent = db.Column(
+        db.String(512),
+        nullable=False
+    )
+    region = db.Column(
+        db.String(512),
+        nullable=False
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id'),
+        nullable=False
+    )
+
 
 class BlockedIPs(db.Model):
     """Data model for temporary blocked IPs."""
@@ -75,13 +100,13 @@ class BlockedIPs(db.Model):
     )
     ip = db.Column(
         db.String(80),
-        nullable = False
+        nullable=False
     )
     last_timestamp = db.Column(
         db.DateTime,
-        nullable = True
+        nullable=True
     )
     timeout = db.Column(
         db.DateTime,
-        nullable = True
+        nullable=True
     )

@@ -26,6 +26,8 @@ class Config(object):
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     MAIL_USE_TLS = False
+    # IP info API
+    GEOIPIFY_API_KEY = environ["GEOIPIFY_API_KEY"]
 
 class ProdConfig(Config):
     pass

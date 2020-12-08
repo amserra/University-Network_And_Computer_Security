@@ -8,7 +8,7 @@ from flask import current_app as app
 from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
-from app.models import db, User, BlockedIPs
+from app.models import db, User, UsualMachine, BlockedIPs
 from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm, MasterPasswordForm
 from .crypto import generate_secret_totp_key, totp
 from .auxFunc import banIP
@@ -136,7 +136,13 @@ def confirm_login(type=None):
                 user.new_secret_totp_key = generate_secret_totp_key()
                 return redirect(url_for("qr_code.qrcode", type="change_secret"))
 
-
+            # Everythin OK here
+            # Check if this machine exists. If not, save this machine as usual_machine and notify user
+            # geoip_data = simple_geoip.get_geoip_data().location.region # not sure if can get json objects like this or is necessary to decerialize
+            # new_usual_machine = UsualMachine(
+            #     user_agent=request.user_agent.string,
+            #     region=geoip_data
+            # )
             return redirect(url_for("main.index"))
     
     return render_template("auth/confirm_login.html", form=form, attempts = 'Attempts remaining: {}'.format(session['attempts_2fa']))
