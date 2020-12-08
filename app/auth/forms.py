@@ -5,16 +5,25 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
+from datetime import datetime as dt, timedelta as td
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, ValidationError, Regexp
 from werkzeug.security import check_password_hash
-from app.models import db, User
-from flask import g
+from app.models import db, User, BlockedIPs
+from flask import g, request,  redirect, flash, url_for
+from .auxFunc import banIP
+
 from .crypto import totp
 
 def check_unique(form, field):
     if(User.query.filter_by(email=field.data).first() is not None):
         raise ValidationError('An user with this email already exists')
+
+def check_honeypot(form, field):   
+    if field.data != "":
+        ip = request.remote_addr
+        banIP(ip,"Some error occurred.")
+        raise ValidationError('A bot may have attacked')
 
 def check_existence(form, field):
     if(User.query.filter_by(email=field.data).first() is None):
@@ -45,7 +54,22 @@ class SignupForm(FlaskForm):
     )
 
     recaptcha = RecaptchaField()
-    
+
+    #====== Honeypot ======
+    address = StringField(
+        "Address",
+        [
+            check_honeypot
+        ]
+    )
+    phoneNumber = StringField(
+        "Phone Number",
+        [
+            check_honeypot
+        ]
+    )
+    #=======================
+
 def check_email_exists(form, field):
     if(User.query.filter_by(email=field.data).first() is None):
         raise ValidationError('The email or password is incorrect')

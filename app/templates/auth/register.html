@@ -30,6 +30,28 @@
     </div>
 
     <div class="field">
+      {{ form.address(class_="input", placeholder=" ", autocomplete="off") }}
+      {{ form.address.label(class_="label") }}
+      {% if form.address.errors %}
+        <div class="error-register">
+          <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+          {{ form.address.errors[0] }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="field">
+      {{ form.phoneNumber(class_="input", placeholder=" ", autocomplete="off") }}
+      {{ form.phoneNumber.label(class_="label") }}
+      {% if form.phoneNumber.errors %}
+        <div class="error-register">
+          <img style="vertical-align:-2px" height="15" width="15" src="{{ url_for('static', filename='img/warning-sign.svg') }}">
+          {{ form.phoneNumber.errors[0] }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="field">
       {{ form.password(class_="input", placeholder=" ") }}
       {{ form.password.label(class_="label") }}
       <span class="toggle-password">👁️</span>
@@ -76,5 +98,7 @@
     {% endif %}
 
     <button class="btn-register">Register</button>
+
+    
   </form>
 {% endblock %}

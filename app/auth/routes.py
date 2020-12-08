@@ -11,9 +11,10 @@ from Crypto.Random import get_random_bytes
 from app.models import db, User, BlockedIPs
 from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm, MasterPasswordForm
 from .crypto import generate_secret_totp_key, totp
+from .auxFunc import banIP
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_confirmation_email, send_password_recover_email
-from .decorators import basic_login_required, full_login_required, return_if_logged, return_if_fully_logged
+from .decorators import basic_login_required, full_login_required, return_if_logged, return_if_fully_logged, check_ip_banned
 
 auth = Blueprint("auth", __name__)
 
@@ -37,6 +38,7 @@ def load_logged_in_user():
 #Validates that the username is not already taken. Hashes the password for security.
 @auth.route("/register", methods=("GET", "POST"))
 @return_if_logged
+@check_ip_banned
 def register():
     form = SignupForm()
 
@@ -63,7 +65,7 @@ def register():
         return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html", form=form)
-
+    
 
 @auth.route("/confirm_login", methods=("GET", "POST"))
 @auth.route("/confirm_login/<type>", methods=("GET", "POST"))
@@ -142,38 +144,18 @@ def confirm_login(type=None):
 # Log in a registered user by adding the user id to the session.
 @auth.route("/login", methods=("GET", "POST"))
 @return_if_logged
+@check_ip_banned
 def login():
     form = SignInForm()
         
     
     #======== Brute force protection =========
     if 'attempts_login' not in session:
-        ip_info = BlockedIPs.query.filter_by(ip=request.remote_addr).first()
-        if(ip_info != None):
-            if(dt.now() < ip_info.timeout):
-                time_diference = ip_info.timeout - dt.now()
-                flash(f"You need to wait {str(time_diference).split('.', 2)[0]} before trying to login", "error")
-                return redirect(url_for("main.index"))
         session['attempts_login'] = 10
 
     if(session['attempts_login'] <= 0):
         session.pop('attempts_login')
-        ip_info = BlockedIPs.query.filter_by(ip=request.remote_addr).first()
-        if(ip_info == None):
-            time = dt.now()
-            ip_info = BlockedIPs(
-                ip = request.remote_addr, 
-                last_timestamp = time,
-                timeout = time + td(minutes = 15)
-            )
-            db.session.add(ip_info)
-        else:
-            time = dt.now()
-            prev_time_diference = ip_info.timeout - ip_info.last_timestamp
-            ip_info.last_timestamp = time
-            ip_info.timeout = min(time + td(seconds = prev_time_diference.seconds * 2), time + td(hours = 24))
-        db.session.commit()
-        flash(f"You don't have anymore attempts. Try again in {str(ip_info.timeout - ip_info.last_timestamp).split('.', 2)[0]}", "error")
+        banIP(request.remote_addr, "You don't have anymore attempts.")
         return redirect(url_for("main.index"))
 
     if(request.method == 'POST'):

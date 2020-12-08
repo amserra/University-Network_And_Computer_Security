@@ -12,6 +12,11 @@ window.onload = () => {
   password.addEventListener("input", (e) => validatePassword(e, bars, validation, confirmPassword));
   confirmPassword.addEventListener("input", (e) => checkPasswordMatch(password, confirmPassword));
 
+  const address = (document.getElementsByName("address")[0]).parentElement;
+  const phoneNumber = (document.getElementsByName("phoneNumber")[0]).parentElement;
+  address.classList.add('ohnohoney');
+  phoneNumber.classList.add('ohnohoney');
+
   toggle_span1.addEventListener("mouseenter", (e) => showPassword(e, password));
   toggle_span2.addEventListener("mouseenter", (e) => showPassword(e, confirmPassword));
   toggle_span1.addEventListener("mouseleave", (e) => hidePassword(e, password));
