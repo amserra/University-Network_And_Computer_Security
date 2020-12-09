@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
+from flask import current_app as app
 
 # Logging setup. Disables unecessary logs
 import logging
@@ -38,7 +39,17 @@ def create_app():
     app.register_blueprint(errors)
     app.register_blueprint(api, url_prefix='/api')
     
+    @app.after_request
+    def responde_headers(response):
+        response.headers['X-Content-Type-Options'] = "nosniff"
+        response.headers['X-Frame-Options'] = 'DENY'
+        return response
+
     with app.app_context():
         # Creates database tables
         db.create_all(app=app)
         return app
+
+
+
+    
