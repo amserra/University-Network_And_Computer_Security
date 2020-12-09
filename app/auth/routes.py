@@ -214,17 +214,38 @@ def login():
 # and then introduce your QR code to change the password
 @auth.route("/lost_password", methods=("GET", "POST"))
 @return_if_logged
+@check_ip_banned
 def lost_password():
     form = RecoverPasswordForm()
+
+    #======== Brute force protection =========
+    if 'attempts_recover' not in session:
+        session['attempts_recover'] = 10
+
+    if(session['attempts_recover'] <= 0):
+        session.pop('attempts_recover')
+        banIP(request.remote_addr, "You don't have anymore attempts.")
+        return redirect(url_for("main.index"))
+
+    if(request.method == 'POST'):
+        session['attempts_recover'] += -1
+    # ======================================
 
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         send_password_recover_email(user.email, user.name)
         flash("A recover link has been sent to your email.", "info")
 
+        #Unblock IP - Reset brute force protection
+        BlockedIPs.query.filter_by(ip=request.remote_addr).delete()
+        db.session.commit()
+
         return redirect(url_for("main.index"))
 
-    return render_template("auth/recover_password.html", form=form)
+    if(session['attempts_recover'] < 4):
+        return render_template("auth/recover_password.html", form=form, attempts = 'Attempts remaining: {}'.format(session['attempts_recover']))
+    else:
+        return render_template("auth/recover_password.html", form=form)
 
 
 @auth.route("/master_password", methods=("GET", "POST"))
