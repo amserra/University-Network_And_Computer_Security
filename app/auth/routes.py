@@ -1,6 +1,7 @@
 import logging
 logging.basicConfig(level=logging.DEBUG)
 from os import urandom
+import json
 
 from datetime import datetime as dt, timedelta as td
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -8,13 +9,16 @@ from flask import current_app as app
 from werkzeug.security import check_password_hash, generate_password_hash
 from Crypto.Random import get_random_bytes 
 
+from app import simple_geoip
 from app.models import db, User, UsualMachine, BlockedIPs
 from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm, MasterPasswordForm
 from .crypto import generate_secret_totp_key, totp
-from .auxFunc import banIP
+from .auxFunc import banIP, checkUsualMachine, removeUserMachine
 from itsdangerous.url_safe import URLSafeSerializer
-from ..email.send_email import send_confirmation_email, send_password_recover_email
+from ..email.send_email import send_confirmation_email, send_password_recover_email, send_alert_unknown_machine, send_alert_unknown_machine_basic
 from .decorators import basic_login_required, full_login_required, return_if_logged, return_if_fully_logged, check_ip_banned
+from types import SimpleNamespace
+from ..email.token import confirm_token_no_expire
 
 auth = Blueprint("auth", __name__)
 
@@ -81,9 +85,6 @@ def confirm_login(type=None):
 
     print(type)
 
-    #============= TESTE - APAGAR DEPOIS ============
-    print(totp(user.secret_totp_key))
-    #================================================
     form = Code2FAForm()
 
     #======== Brute force protection ==========
@@ -130,19 +131,28 @@ def confirm_login(type=None):
             time_diference = time - last_change_key_time
             
             if time_diference.days > 365:
-                # print("SECONDS")
-                # print(f"{time} - {last_change_key_time} = {time_diference.seconds}")
+
                 session["change_secret"] = True
                 user.new_secret_totp_key = generate_secret_totp_key()
                 return redirect(url_for("qr_code.qrcode", type="change_secret"))
 
             # Everythin OK here
-            # Check if this machine exists. If not, save this machine as usual_machine and notify user
-            # geoip_data = simple_geoip.get_geoip_data().location.region # not sure if can get json objects like this or is necessary to decerialize
-            # new_usual_machine = UsualMachine(
-            #     user_agent=request.user_agent.string,
-            #     region=geoip_data
-            # )
+            city = simple_geoip.get_geoip_data().get('location').get('city')
+            user_agent = request.user_agent.string
+
+            if not checkUsualMachine(user, user_agent, city):
+                new_usual_machine = UsualMachine(
+                    user_agent=user_agent,
+                    region=city
+                )
+                user.usual_machines.append(new_usual_machine)
+                db.session.commit()
+
+                machine = UsualMachine.query.filter_by(user_id=user.id, user_agent=user_agent, region=city).first()
+                print(machine.id)
+                sent_user_agent = f'{request.user_agent.browser}/{request.user_agent.platform}'
+                send_alert_unknown_machine(user.email, user.name, sent_user_agent, city, machine.id)
+
             return redirect(url_for("main.index"))
     
     return render_template("auth/confirm_login.html", form=form, attempts = 'Attempts remaining: {}'.format(session['attempts_2fa']))
@@ -179,6 +189,12 @@ def login():
         #Unblock IP - Reset brute force protection
         BlockedIPs.query.filter_by(ip=request.remote_addr).delete()
         db.session.commit()
+
+        city = simple_geoip.get_geoip_data().get('location').get('city')
+        user_agent = request.user_agent.string
+
+        if not checkUsualMachine(user, user_agent, city):
+            send_alert_unknown_machine_basic(user.email, user.name, user_agent, city)
         
         if(not user.email_verified):
             serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
@@ -264,6 +280,37 @@ def change_password():
     if form.validate_on_submit():
         user = User.query.filter_by(id=g.user.id).first()
         user.brute_force_timestamp_master = None        #Reset masterpassword timeout
+        user.password = generate_password_hash(form.new_password.data, 'pbkdf2:sha256:150000', 8)
+        db.session.commit()
+        session.clear()
+        flash("Password changed successfully. You can login now", "success")
+        return redirect(url_for("main.index"))
+
+    return render_template("auth/change_password.html", form=form)
+
+# Page to change password
+@auth.route("/change_password/<token>", methods=("GET", "POST"))
+def change_password_token(token):
+    print(request.referrer)
+    try:
+        [email, id] = confirm_token_no_expire(token)
+    except:
+        logging.debug("Exception confirming token")
+        flash('The confirmation link is invalid', 'error')
+        return redirect(url_for('main.index'))
+
+    form = ChangePasswordForm()
+
+    if form.validate_on_submit():
+        if UsualMachine.query.filter_by(id=id).first() is None:
+            flash('Invalid link', 'error')
+            return redirect(url_for('main.index'))
+
+        removeUserMachine(email, id)
+
+        user = User.query.filter_by(email=email).first()
+        user.brute_force_timestamp_master = None        #Reset masterpassword timeout
+        user.has_2FA = False # reset 2fa code
         user.password = generate_password_hash(form.new_password.data, 'pbkdf2:sha256:150000', 8)
         db.session.commit()
         session.clear()

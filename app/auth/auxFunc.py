@@ -1,5 +1,5 @@
 from datetime import datetime as dt, timedelta as td
-from app.models import db, BlockedIPs
+from app.models import db, BlockedIPs, User, UsualMachine
 from flask import  redirect, flash, url_for
 
 def banIP(ip,error):
@@ -20,3 +20,16 @@ def banIP(ip,error):
     db.session.commit()
     flash(f"{error} Try again in {str(ip_info.timeout - ip_info.last_timestamp).split('.', 2)[0]}", "error")
     
+
+def checkUsualMachine(user, user_agent, city):
+    user_machines = user.usual_machines
+    for machine in user_machines:
+        if machine.user_agent == user_agent and machine.region == city:
+            return True
+    return False
+
+def removeUserMachine(email, machine_id):
+    #user = User.query.filter_by(email=email).first()
+    machine = UsualMachine.query.filter_by(id=machine_id).first()
+    db.session.delete(machine)
+    db.session.commit()
