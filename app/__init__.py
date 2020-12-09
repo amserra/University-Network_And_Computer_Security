@@ -34,13 +34,11 @@ def create_app():
     from app.email.routes import email
     from app.qr_code.routes import qr_code
     from app.errors.handlers import errors
-    from app.api.routes import api
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(email)
     app.register_blueprint(qr_code)
     app.register_blueprint(errors)
-    app.register_blueprint(api, url_prefix='/api')
     
     @app.after_request
     def responde_headers(response):
