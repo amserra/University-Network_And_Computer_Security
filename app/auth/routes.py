@@ -13,7 +13,7 @@ from app import simple_geoip
 from app.models import db, User, UsualMachine, BlockedIPs
 from .forms import SignupForm, SignInForm, RecoverPasswordForm, Code2FAForm, ChangePasswordForm, MasterPasswordForm
 from .crypto import generate_secret_totp_key, totp
-from .auxFunc import banIP, checkUsualMachine, removeUserMachine
+from .auxFunc import getIP, banIP, checkUsualMachine, removeUserMachine
 from itsdangerous.url_safe import URLSafeSerializer
 from ..email.send_email import send_confirmation_email, send_password_recover_email, send_alert_unknown_machine, send_alert_unknown_machine_basic
 from .decorators import basic_login_required, full_login_required, return_if_logged, return_if_fully_logged, check_ip_banned
@@ -173,10 +173,11 @@ def login():
     if 'attempts_login' not in session:
         session['attempts_login'] = 10
 
-    if(session['attempts_login'] <= 0):
+    if (session['attempts_login'] <= 0):
         session.pop('attempts_login')
-        banIP(request.remote_addr, "You don't have anymore attempts.")
+        banIP( getIP(request), "You don't have anymore attempts.")
         return redirect(url_for("main.index"))
+
 
     if(request.method == 'POST'):
         session['attempts_login'] += -1

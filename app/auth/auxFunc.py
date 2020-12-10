@@ -2,6 +2,13 @@ from datetime import datetime as dt, timedelta as td
 from app.models import db, BlockedIPs, User, UsualMachine
 from flask import  redirect, flash, url_for
 
+def getIP(request):
+    if 'X-Forwarded-For' in request.headers:
+        ip = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
+    else:
+        ip = request.remote_addr or 'untrackable'
+    return ip
+
 def banIP(ip,error):
     ip_info = BlockedIPs.query.filter_by(ip=ip).first()
     if(ip_info == None):
