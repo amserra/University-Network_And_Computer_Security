@@ -46,6 +46,9 @@ def create_app():
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         response.headers['X-XSS-Protection'] = '1; mode=block'
+        if 'Cache-Control' not in response.headers:
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
         return response
 
     with app.app_context():
