@@ -122,8 +122,10 @@ def confirm_login(type=None):
             flash("Correct code. You can now change your password", "info")
             return redirect(url_for("auth.change_password"))
         else:
+            inputted_password = session['inputted_password']
             session.clear()
             session['user_id'] = user.id
+            session['inputted_password'] = inputted_password
             logging.debug("Success in POST /confirm_login: Logged 2FA user with email %s" % user.email)
             flash("Login successful", "success")
             time = dt.now()
@@ -184,12 +186,11 @@ def login():
     # ======================================
 
     if form.validate_on_submit():
-        user_id = User.query.filter_by(email=form.email.data).first().id
-        session.clear()
-        session["user_id_no2FA"] = user_id
-        logging.debug("Success in POST /login: Logged(user + password) user with email %s" % form.email.data)
-
         user = User.query.filter_by(email=form.email.data).first()
+        session.clear()
+        session["user_id_no2FA"] = user.id
+        session['inputted_password'] = user.password
+        logging.debug("Success in POST /login: Logged(user + password) user with email %s" % form.email.data)
 
         #Unblock IP - Reset brute force protection
         BlockedIPs.query.filter_by(ip=request.remote_addr).delete()
