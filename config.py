@@ -14,11 +14,6 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = environ["SQLALCHEMY_DATABASE_URI"]
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # Cookie lifetime
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=120)
-    SESSION_COOKIE_SECURE=True
-    SESSION_COOKIE_HTTPONLY=True
-    SESSION_COOKIE_SAMESITE='Strict'
     # Recaptha keys
     RECAPTCHA_PUBLIC_KEY = environ["RECAPTCHA_PUBLIC_KEY"]
     RECAPTCHA_PRIVATE_KEY = environ["RECAPTCHA_PRIVATE_KEY"]
@@ -33,7 +28,11 @@ class Config(object):
     GEOIPIFY_API_KEY = environ["GEOIPIFY_API_KEY"]
 
 class ProdConfig(Config):
-    pass
+    # Cookie lifetime
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=120)
+    SESSION_COOKIE_SECURE=True
+    SESSION_COOKIE_HTTPONLY=True
+    SESSION_COOKIE_SAMESITE='Strict'
 
 class DevConfig(Config):
     DEBUG = True

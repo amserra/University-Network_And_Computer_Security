@@ -141,6 +141,10 @@ def confirm_login(type=None):
             user_agent = request.user_agent.string
 
             if not checkUsualMachine(user, user_agent, city):
+                sendEmail = True
+                if not user.usual_machines:
+                    sendEmail = False
+
                 new_usual_machine = UsualMachine(
                     user_agent=user_agent,
                     region=city
@@ -148,10 +152,10 @@ def confirm_login(type=None):
                 user.usual_machines.append(new_usual_machine)
                 db.session.commit()
 
-                machine = UsualMachine.query.filter_by(user_id=user.id, user_agent=user_agent, region=city).first()
-                print(machine.id)
-                sent_user_agent = f'{request.user_agent.browser}/{request.user_agent.platform}'
-                send_alert_unknown_machine(user.email, user.name, sent_user_agent, city, machine.id)
+                if sendEmail:
+                    machine = UsualMachine.query.filter_by(user_id=user.id, user_agent=user_agent, region=city).first()
+                    sent_user_agent = f'{request.user_agent.browser}/{request.user_agent.platform}'
+                    send_alert_unknown_machine(user.email, user.name, sent_user_agent, city, machine.id)
 
             return redirect(url_for("main.index"))
     
@@ -189,16 +193,17 @@ def login():
         #Unblock IP - Reset brute force protection
         BlockedIPs.query.filter_by(ip=request.remote_addr).delete()
         db.session.commit()
-
-        city = simple_geoip.get_geoip_data().get('location').get('city')
-        user_agent = request.user_agent.string
-
-        if not checkUsualMachine(user, user_agent, city):
-            send_alert_unknown_machine_basic(user.email, user.name, user_agent, city)
         
         if(not user.email_verified):
             serialized_email = URLSafeSerializer(app.config["SECRET_KEY"]).dumps(user.email)
             return redirect(url_for("email.unconfirmed", user_email=serialized_email))
+
+        city = simple_geoip.get_geoip_data().get('location').get('city')
+        user_agent = request.user_agent.string
+        sent_user_agent = f'{request.user_agent.browser}/{request.user_agent.platform}'
+
+        if (not checkUsualMachine(user, user_agent, city)) and (user.usual_machines):
+            send_alert_unknown_machine_basic(user.email, user.name, sent_user_agent, city)
 
         if user.has_2FA:
             return redirect(url_for("auth.confirm_login"))
