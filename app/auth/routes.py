@@ -230,7 +230,7 @@ def lost_password():
 
     if(session['attempts_recover'] <= 0):
         session.pop('attempts_recover')
-        banIP(request.remote_addr, "You don't have anymore attempts.")
+        banIP( getIP(request) , "You don't have anymore attempts.")
         return redirect(url_for("main.index"))
 
     if(request.method == 'POST'):

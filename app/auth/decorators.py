@@ -2,6 +2,7 @@ from functools import wraps
 from flask import g, redirect, url_for, session, abort, request, flash
 from datetime import datetime as dt
 from app.models import BlockedIPs
+from .auxFunc import getIP
 
 def return_if_logged(f):
     @wraps(f)
@@ -38,7 +39,7 @@ def full_login_required(f):
 def check_ip_banned(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        ip = request.remote_addr
+        ip = getIP(request)
         ip_info = BlockedIPs.query.filter_by(ip=ip).first()
         if (ip_info != None and dt.now() < ip_info.timeout):
             time_diference = ip_info.timeout - dt.now()
