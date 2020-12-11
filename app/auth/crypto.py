@@ -23,7 +23,7 @@ def get_digit_power(no_digits):
 
 def totp(key):
     no_digits = 6
-    key_kdf = pbkdf2_hex(key,"salt",1000,32)
+    key_kdf = pbkdf2_hex(key,"CTcPcC4x",10000,64)
     unix_timestamp = int(time.time())
     step = str(unix_timestamp//30)
     
