@@ -1,4 +1,4 @@
-# University-Network_And_Computer_Security
+# University-Network And Computer Security
 
 Repository that contains the files of the project developed during the **Network and Computer Security** class, performed in the 1st year of my MSc in Computer Science at Instituto Superior Técnico.
 
